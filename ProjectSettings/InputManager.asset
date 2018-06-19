@@ -329,8 +329,8 @@ InputManager:
     m_Name: XoW
     descriptiveName: 
     descriptiveNegativeName: 
-    negativeButton: 
-    positiveButton: 
+    negativeButton: k
+    positiveButton: i
     altNegativeButton: 
     altPositiveButton: joystick button 1
     gravity: 1000
@@ -345,8 +345,8 @@ InputManager:
     m_Name: YoW
     descriptiveName: 
     descriptiveNegativeName: 
-    negativeButton: 
-    positiveButton: escape
+    negativeButton: j
+    positiveButton: l
     altNegativeButton: 
     altPositiveButton: joystick button 1
     gravity: 1000
@@ -361,8 +361,8 @@ InputManager:
     m_Name: ZoW
     descriptiveName: 
     descriptiveNegativeName: 
-    negativeButton: 
-    positiveButton: escape
+    negativeButton: u
+    positiveButton: o
     altNegativeButton: 
     altPositiveButton: joystick button 1
     gravity: 1000

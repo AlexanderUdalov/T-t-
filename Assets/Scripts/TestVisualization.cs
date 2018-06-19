@@ -12,6 +12,8 @@ public class TestVisualization : MonoBehaviour {
     public List<GameObject> Vertices;
     public List<LineRenderer> Edges;
 
+    private GameObject _parent;
+
 
     //Если поставить w = 1 все сломается =(
     public Vector4 PointOfView = new Vector4(0, 0, 1, 10);
@@ -19,11 +21,13 @@ public class TestVisualization : MonoBehaviour {
 
 	void Start () {
         _shape.Initialize();
+        _parent = new GameObject("ShapeParent");
 
 		foreach (var vertex in _shape.Vertices)
         {
             var go = Instantiate(VertexPrefab, Vertex.ToThridDimensionalSpace(vertex, PointOfView), Quaternion.identity);
             go.SetActive(true);
+            go.transform.SetParent(_parent.transform);
             Vertices.Add(go);
         }
         
@@ -35,6 +39,7 @@ public class TestVisualization : MonoBehaviour {
                 {
                     var go = Instantiate(EdgePrefab);
                     go.SetActive(true);
+                    go.transform.SetParent(_parent.transform);
                     LineRenderer renderer = go.GetComponent<LineRenderer>();
                     Edges.Add(renderer);
 
