@@ -8,10 +8,11 @@ using UnityEngine;
 
 namespace ShapeMetaData
 {
-    public class MetaDataGenerator
+    public static class MetaDataGenerator
     {
         private static Dictionary<ShapeType, Func<Shape> > _funcs = new Dictionary<ShapeType, Func<Shape>>
         {
+            [ShapeType.Pentachoron] = CreatePentachoron,
             [ShapeType.Tesseract] = CreateTesseractData
         };
         
@@ -23,6 +24,27 @@ namespace ShapeMetaData
             File.WriteAllText(
                 Path.Combine(Application.streamingAssetsPath, "ShapeMetaData", shapeType + ".json"),
                 data);
+        }
+
+        private static Shape CreatePentachoron()
+        {
+            Shape pentachoron = new Shape(5)
+            {
+                Vertices =
+                {
+                    [0] = new Vertex(1, 1, 1, 0),
+                    [1] = new Vertex(1, -1, -1, 0),
+                    [2] = new Vertex(-1, 1, -1, 0),
+                    [3] = new Vertex(-1, -1, 1, 0),
+                    [4] = new Vertex(0, 0, 0, (float) Math.Sqrt(5))
+                }
+            };
+
+            for (int i = 0; i < pentachoron.AdjacencyMatrix.GetLength(0); i++)
+                for (int j = 0; j < pentachoron.AdjacencyMatrix.GetLength(0); j++)
+                    pentachoron.AdjacencyMatrix[i, j] = 1;
+
+            return pentachoron;
         }
 
         private static Shape CreateTesseractData()

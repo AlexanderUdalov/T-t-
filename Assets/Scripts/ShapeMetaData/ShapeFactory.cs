@@ -6,17 +6,14 @@ using UnityEngine;
 
 namespace ShapeMetaData
 {
-	public class ShapeFactory
+	public static class ShapeFactory
 	{	
 		public static Shape CreateShape(ShapeType shapeType)
 		{
 			string path = Path.Combine(Application.streamingAssetsPath, "ShapeMetaData", shapeType + ".json");
 
 			if (!File.Exists(path))
-			{
-				Debug.Log("Not Exists");
 				MetaDataGenerator.GenerateDataFile(shapeType);
-			}
 
 			return JsonConvert.DeserializeObject<Shape>(LoadString(path));
 		}
