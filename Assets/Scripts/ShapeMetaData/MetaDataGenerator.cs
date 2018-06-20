@@ -10,15 +10,16 @@ namespace ShapeMetaData
 {
     public static class MetaDataGenerator
     {
-        private static Dictionary<ShapeType, Func<Shape> > _funcs = new Dictionary<ShapeType, Func<Shape>>
+        private static readonly Dictionary<ShapeType, Func<Shape> > CreationFuncs = new Dictionary<ShapeType, Func<Shape>>
         {
-            [ShapeType.Pentachoron] = CreatePentachoron,
-            [ShapeType.Tesseract] = CreateTesseractData
+            [ShapeType.Pentachoron]    = CreatePentachoronData,
+            [ShapeType.Tesseract]      = CreateTesseractData,
+            [ShapeType.Hexadecachoron] = CreateHexadecachoronData
         };
         
         public static void GenerateDataFile(ShapeType shapeType)
         {
-            Shape shape = _funcs[shapeType]();
+            Shape shape = CreationFuncs[shapeType]();
             
             string data = JsonConvert.SerializeObject(shape);
             File.WriteAllText(
@@ -26,7 +27,7 @@ namespace ShapeMetaData
                 data);
         }
 
-        private static Shape CreatePentachoron()
+        private static Shape CreatePentachoronData()
         {
             Shape pentachoron = new Shape(5)
             {
@@ -96,6 +97,31 @@ namespace ShapeMetaData
             }
 
             return tesseract;
+        }
+
+        private static Shape CreateHexadecachoronData()
+        {
+            Shape hexadecachoron = new Shape(8)
+            {
+                Vertices =
+                {
+                    [0] = new Vertex(1, 0, 0, 0),
+                    [1] = new Vertex(0, 1, 0, 0),
+                    [2] = new Vertex(0, 0, 1, 0),
+                    [3] = new Vertex(0, 0, 0, 1),
+                    [4] = new Vertex(-1, 0, 0, 0),
+                    [5] = new Vertex(0, -1, 0, 0),
+                    [6] = new Vertex(0, 0, -1, 0),
+                    [7] = new Vertex(0, 0, 0, -1)
+                }
+            };
+
+            for (int i = 0; i < hexadecachoron.AdjacencyMatrix.GetLength(0); i++)
+                for (int j = 0; j < hexadecachoron.AdjacencyMatrix.GetLength(0); j++)
+                    if (Math.Abs(i - j) != 4)
+                        hexadecachoron.AdjacencyMatrix[i, j] = 1;
+            
+            return hexadecachoron;
         }
     }
 }

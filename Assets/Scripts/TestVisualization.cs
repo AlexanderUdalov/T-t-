@@ -21,7 +21,7 @@ public class TestVisualization : MonoBehaviour {
     private Shape _shape;
 
 	void Start () {
-        _shape = ShapeFactory.CreateShape(ShapeType.Pentachoron);
+        _shape = ShapeFactory.CreateShape(ShapeType.Hexadecachoron);
         _parent = new GameObject("ShapeParent");
 
 		foreach (var vertex in _shape.Vertices)
