@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using FourDimensionalSpace;
+using ShapeMetaData;
 
 public class TestVisualization : MonoBehaviour {
     public float Angle = 30f;
@@ -17,10 +18,10 @@ public class TestVisualization : MonoBehaviour {
 
     //Если поставить w = 1 все сломается =(
     public Vector4 PointOfView = new Vector4(0, 0, 1, 10);
-    private Shape _shape = new Tesseract(1f);
+    private Shape _shape;
 
 	void Start () {
-        _shape.Initialize();
+        _shape = ShapeFactory.CreateShape(ShapeType.Tesseract);
         _parent = new GameObject("ShapeParent");
 
 		foreach (var vertex in _shape.Vertices)

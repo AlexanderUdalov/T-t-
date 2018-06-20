@@ -5,13 +5,17 @@ using UnityEngine;
 
 namespace FourDimensionalSpace
 {
-    public abstract class Shape
+    public class Shape
     {
-        public byte[,] AdjacencyMatrix { get; protected set; }
-        public Vertex[] Vertices { get; protected set; }
+        public byte[,] AdjacencyMatrix { get; set; }
+        public Vertex[] Vertices { get; set; }
 
-        public abstract void Initialize();
-
+        public Shape(int numberOfVertices)
+        {
+            Vertices = new Vertex[numberOfVertices];
+            AdjacencyMatrix = new byte[numberOfVertices, numberOfVertices];
+        }
+        
         public void Rotate(float angle, Planes plane)
         {
             for (int i = 0; i < Vertices.Length; i++)
@@ -87,8 +91,9 @@ namespace FourDimensionalSpace
                             { 0, 0, sin, cos }
                         };
                     }
+                default:
+                    throw new ArgumentException();
             }
-            throw new NotImplementedException();
         }
     }
 }

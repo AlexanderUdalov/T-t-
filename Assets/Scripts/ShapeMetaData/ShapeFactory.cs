@@ -1,0 +1,34 @@
+﻿using System.Collections;
+using System.IO;
+using FourDimensionalSpace;
+using Newtonsoft.Json;
+using UnityEngine;
+
+namespace ShapeMetaData
+{
+	public class ShapeFactory
+	{	
+		public static Shape CreateShape(ShapeType shapeType)
+		{
+			string path = Path.Combine(Application.streamingAssetsPath, "ShapeMetaData", shapeType + ".json");
+
+			if (!File.Exists(path))
+			{
+				Debug.Log("Not Exists");
+				MetaDataGenerator.GenerateDataFile(shapeType);
+			}
+
+			return JsonConvert.DeserializeObject<Shape>(LoadString(path));
+		}
+
+		private static string LoadString(string url)
+		{
+			if (Application.platform == RuntimePlatform.OSXEditor ||
+			    Application.platform == RuntimePlatform.OSXPlayer)
+				url = "file://" + url;
+			
+			return new WWW(url).text;
+		}
+		
+	}
+}
