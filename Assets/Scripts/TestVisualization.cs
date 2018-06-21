@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using FourDimensionalSpace;
 using ShapeMetaData;
@@ -22,7 +21,7 @@ public class TestVisualization : MonoBehaviour {
 
 	void Start () 
 	{
-        _shape = ShapeFactory.CreateShape(ShapeType.Hexadecachoron);
+        _shape = ShapeFactory.CreateShape(ShapeType.Hexacosichoron);
         _parent = new GameObject("ShapeParent");
 
 		foreach (var vertex in _shape.Vertices)

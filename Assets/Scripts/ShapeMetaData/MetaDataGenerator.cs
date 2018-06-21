@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Net;
+using System.Linq;
 using FourDimensionalSpace;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -11,16 +10,19 @@ namespace ShapeMetaData
 {
     public static class MetaDataGenerator
     {
+        private static readonly float F = (float) ((1 + Math.Sqrt(5)) / 2);
+
         private static readonly Dictionary<ShapeType, Func<Shape> > CreationFuncs = new Dictionary<ShapeType, Func<Shape>>
         {
             [ShapeType.Pentachoron]      = CreatePentachoronData,
             [ShapeType.Tesseract]        = CreateTesseractData,
             [ShapeType.Hexadecachoron]   = CreateHexadecachoronData,
-            [ShapeType.Icositetrachoron] = CreateIcositetrachoronData
+            [ShapeType.Icositetrachoron] = CreateIcositetrachoronData,
+            [ShapeType.Hexacosichoron]   = CreateHexacosichoronData
         };
         
         public static void GenerateDataFile(ShapeType shapeType)
-        {
+        {            
             Shape shape = CreationFuncs[shapeType]();
             CalculateAdjacencyList(shape.AdjacencyList, shape.Vertices, shape.AdjacencyList.Capacity);
             
@@ -57,6 +59,15 @@ namespace ShapeMetaData
             InitVerticesTesseract(icositetrachoron.Vertices, 0);
             InitVerticesHexadecachoron(icositetrachoron.Vertices, 16, 2);
             return icositetrachoron;
+        }
+
+        private static Shape CreateHexacosichoronData()
+        {
+            Shape hexacosichoron = new Shape(120, 720);
+            InitVerticesTesseract(hexacosichoron.Vertices, 0, 3);
+            InitVerticesHexadecachoron(hexacosichoron.Vertices, 16, 6);
+            InitVerticesEvenPermutationNoRepetitions(hexacosichoron.Vertices, new [] {0, 1, F, 1/F}, 16 + 8, 96, 3);
+            return hexacosichoron;
         }
 
         private static void InitVerticesPentachoron(Vertex[] vertices, int startIndex, float multiplier = 1f)
@@ -105,6 +116,64 @@ namespace ShapeMetaData
             vertices[startIndex + 7] = multiplier * new Vertex(0, 0, 0, -1);
         }
 
+        private static void InitVerticesEvenPermutationNoRepetitions(Vertex[] vertices, float[] numbers, int startIndex,
+            int expectedNumberOfVertices, float multiplier = 1f)
+        {    
+            List<float[]> unsignedEvenPermutations = new List<float[]>();
+            int numOfPermutations = 4.Factorial();
+
+            for (int i = 0; i < numOfPermutations; i++)
+            {
+                float[] currentPermutation = new float[4];
+                
+                List<float> optionsLeft = numbers.ToList();
+                for (int j = 0; j < numbers.Length; j++)
+                {
+                    int index = i / (3 - j).Factorial() % optionsLeft.Count;
+                    currentPermutation[j] = optionsLeft[index];
+                    optionsLeft.RemoveAt(index);
+                }
+                
+                if (IsPermutationEven(currentPermutation))
+                    unsignedEvenPermutations.Add(currentPermutation);
+            }
+
+            int addIndex = startIndex;
+            
+            foreach (var unsignedPermutation in unsignedEvenPermutations)
+            {
+                List<float[]> signedPermutations = new List<float[]> { unsignedPermutation.ToArray() };
+
+                for (int i = 0; i < numbers.Length; i++)
+                {
+                    if (unsignedPermutation[i] == 0) continue;
+                    
+                    signedPermutations.AddRange(signedPermutations.ToList().Select(perm => (float[])perm.Clone()));
+                    for (int j = 0; j < signedPermutations.Count / 2; j++)
+                        signedPermutations[j][i] *= -1f;
+                }
+
+                foreach (var perm in signedPermutations)
+                    vertices[addIndex++] = multiplier * new Vertex(perm[0], perm[1], perm[2], perm[3]);
+            }
+            
+            if (addIndex - startIndex != expectedNumberOfVertices)
+                throw new MetaDataGenerationException(
+                    $"Expected number of vertices = {expectedNumberOfVertices}, created = {addIndex - startIndex}");
+        }
+
+        private static bool IsPermutationEven(float[] permutation)
+        {
+            int numberOfInversions = 0;
+            
+            for (int i = 0; i < permutation.Length - 1; i++)
+                for (int j = i + 1; j < permutation.Length; j++)
+                    if (permutation[i] > permutation[j])
+                        numberOfInversions++;
+
+            return numberOfInversions % 2 == 0;
+        }
+
         private static void CalculateAdjacencyList(List<Tuple<int, int>> adjacencyList, Vertex[] vertices, int expectedNumberOfEdgese)
         {
             float[][] distances = new float[vertices.Length][];
@@ -137,6 +206,13 @@ namespace ShapeMetaData
             if (adjacencyList.Count != expectedNumberOfEdgese)
                 throw new MetaDataGenerationException(
                     $"Expected number of edges = {expectedNumberOfEdgese}, created = {adjacencyList.Count}");
+        }
+
+        private static int Factorial(this int count)
+        {
+            return count == 0
+                ? 1
+                : Enumerable.Range(1, count).Aggregate((i, j) => i*j);
         }
     }
 }
