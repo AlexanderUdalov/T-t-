@@ -32,18 +32,8 @@ namespace ShapeMetaData
 
         private static Shape CreatePentachoronData()
         {
-            Shape pentachoron = new Shape(5, 10)
-            {
-                Vertices =
-                {
-                    [0] = new Vertex(1, 1, 1, 0),
-                    [1] = new Vertex(1, -1, -1, 0),
-                    [2] = new Vertex(-1, 1, -1, 0),
-                    [3] = new Vertex(-1, -1, 1, 0),
-                    [4] = new Vertex(0, 0, 0, (float) Math.Sqrt(5))
-                }
-            };
-
+            Shape pentachoron = new Shape(5, 10);
+            InitVerticesPentachoron(pentachoron.Vertices, 0);
             return pentachoron;
         }
 
@@ -57,25 +47,28 @@ namespace ShapeMetaData
         private static Shape CreateHexadecachoronData()
         {
             Shape hexadecachoron = new Shape(8, 24);
-            InitVerticesHexadecachoron(hexadecachoron.Vertices, 0);
+            InitVerticesHexadecachoron(hexadecachoron.Vertices, 0, 3);
             return hexadecachoron;
         }
 
-        [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         private static Shape CreateIcositetrachoronData()
         {
             Shape icositetrachoron = new Shape(24, 96);
-
             InitVerticesTesseract(icositetrachoron.Vertices, 0);
-            InitVerticesHexadecachoron(icositetrachoron.Vertices, 16);
-            
-            for (int i = 16; i < 24; i++)
-                icositetrachoron.Vertices[i] *= 2;
-
+            InitVerticesHexadecachoron(icositetrachoron.Vertices, 16, 2);
             return icositetrachoron;
         }
+
+        private static void InitVerticesPentachoron(Vertex[] vertices, int startIndex, float multiplier = 1f)
+        {
+            vertices[startIndex]     = multiplier * new Vertex(1, 1, 1, 0);
+            vertices[startIndex + 1] = multiplier * new Vertex(1, -1, -1, 0);
+            vertices[startIndex + 2] = multiplier * new Vertex(-1, 1, -1, 0);
+            vertices[startIndex + 3] = multiplier * new Vertex(-1, -1, 1, 0);
+            vertices[startIndex + 4] = multiplier * new Vertex(0, 0, 0, (float) Math.Sqrt(5));
+        }
         
-        private static void InitVerticesTesseract(Vertex[] vertices, int startIndex)
+        private static void InitVerticesTesseract(Vertex[] vertices, int startIndex, float multiplier = 1f)
         {
             int signX = 1, signY = 1, signZ = 1, signW = 1;
 
@@ -88,7 +81,7 @@ namespace ShapeMetaData
                         for (int i4 = 0; i4 < 2; i4++)
                         {
                             vertices[startIndex + i1 * 8 + i2 * 4 + i3 * 2 + i4] = 
-                                new Vertex(signX, signY, signZ, signW);
+                                multiplier * new Vertex(signX, signY, signZ, signW);
 
                             signX *= -1;
                         }
@@ -100,16 +93,16 @@ namespace ShapeMetaData
             }
         }
 
-        private static void InitVerticesHexadecachoron(Vertex[] vertices, int startIndex)
+        private static void InitVerticesHexadecachoron(Vertex[] vertices, int startIndex, float multiplier = 1f)
         {
-            vertices[startIndex]     = new Vertex(1, 0, 0, 0);
-            vertices[startIndex + 1] = new Vertex(0, 1, 0, 0);
-            vertices[startIndex + 2] = new Vertex(0, 0, 1, 0);
-            vertices[startIndex + 3] = new Vertex(0, 0, 0, 1);
-            vertices[startIndex + 4] = new Vertex(-1, 0, 0, 0);
-            vertices[startIndex + 5] = new Vertex(0, -1, 0, 0);
-            vertices[startIndex + 6] = new Vertex(0, 0, -1, 0);
-            vertices[startIndex + 7] = new Vertex(0, 0, 0, -1);
+            vertices[startIndex]     = multiplier * new Vertex(1, 0, 0, 0);
+            vertices[startIndex + 1] = multiplier * new Vertex(0, 1, 0, 0);
+            vertices[startIndex + 2] = multiplier * new Vertex(0, 0, 1, 0);
+            vertices[startIndex + 3] = multiplier * new Vertex(0, 0, 0, 1);
+            vertices[startIndex + 4] = multiplier * new Vertex(-1, 0, 0, 0);
+            vertices[startIndex + 5] = multiplier * new Vertex(0, -1, 0, 0);
+            vertices[startIndex + 6] = multiplier * new Vertex(0, 0, -1, 0);
+            vertices[startIndex + 7] = multiplier * new Vertex(0, 0, 0, -1);
         }
 
         private static void CalculateAdjacencyList(List<Tuple<int, int>> adjacencyList, Vertex[] vertices, int expectedNumberOfEdgese)

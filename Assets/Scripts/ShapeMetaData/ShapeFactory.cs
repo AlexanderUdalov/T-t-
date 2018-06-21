@@ -12,8 +12,9 @@ namespace ShapeMetaData
 		{
 			string path = Path.Combine(Application.streamingAssetsPath, "ShapeMetaData", shapeType + ".json");
 
-			if (!File.Exists(path))
-				MetaDataGenerator.GenerateDataFile(shapeType);
+			// пока редактируется генератор - закомментил, чтобы каждый запуск обновлялось
+			//if (!File.Exists(path))
+			MetaDataGenerator.GenerateDataFile(shapeType);
 
 			return JsonConvert.DeserializeObject<Shape>(LoadString(path));
 		}

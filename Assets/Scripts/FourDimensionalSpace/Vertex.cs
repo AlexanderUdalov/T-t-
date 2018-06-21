@@ -100,6 +100,9 @@ namespace FourDimensionalSpace
         public static Vertex operator *(Vertex v, float n) => 
             new Vertex(v.x*n, v.y*n, v.z*n, v.w*n);
         
+        public static Vertex operator *(float n, Vertex v) => 
+            new Vertex(v.x*n, v.y*n, v.z*n, v.w*n);
+        
         public static Vertex operator /(Vertex v, float n) => 
             new Vertex(v.x/n, v.y/n, v.z/n, v.w/n);
     }
