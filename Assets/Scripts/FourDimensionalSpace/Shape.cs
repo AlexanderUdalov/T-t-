@@ -7,13 +7,13 @@ namespace FourDimensionalSpace
 {
     public class Shape
     {
-        public byte[,] AdjacencyMatrix { get; set; }
+        public List<Tuple<int, int>> AdjacencyList { get; set; }
         public Vertex[] Vertices { get; set; }
 
-        public Shape(int numberOfVertices)
+        public Shape(int numberOfVertices, int numberOfEdges)
         {
             Vertices = new Vertex[numberOfVertices];
-            AdjacencyMatrix = new byte[numberOfVertices, numberOfVertices];
+            AdjacencyList = new List<Tuple<int, int>>(numberOfEdges);
         }
         
         public void Rotate(float angle, Planes plane)

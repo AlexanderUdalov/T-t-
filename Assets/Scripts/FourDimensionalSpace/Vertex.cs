@@ -86,9 +86,16 @@ namespace FourDimensionalSpace
             vertex.z = resultMatrix[2];
             vertex.w = resultMatrix[3];
         }
+
+        public static float Distance(Vertex v1, Vertex v2) =>
+            (float) Math.Sqrt((v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y) + 
+                              (v1.z - v2.z) * (v1.z - v2.z) + (v1.w - v2.w) * (v1.w - v2.w));
         
         public static Vertex operator +(Vertex v1, Vertex v2) => 
             new Vertex(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z, v1.w+v2.w);
+        
+        public static Vertex operator -(Vertex v1, Vertex v2) => 
+            new Vertex(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z, v1.w-v2.w);
         
         public static Vertex operator *(Vertex v, float n) => 
             new Vertex(v.x*n, v.y*n, v.z*n, v.w*n);

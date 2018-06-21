@@ -20,7 +20,8 @@ public class TestVisualization : MonoBehaviour {
     public Vector4 PointOfView = new Vector4(0, 0, 1, 10);
     private Shape _shape;
 
-	void Start () {
+	void Start () 
+	{
         _shape = ShapeFactory.CreateShape(ShapeType.Icositetrachoron);
         _parent = new GameObject("ShapeParent");
 
@@ -31,28 +32,23 @@ public class TestVisualization : MonoBehaviour {
             go.transform.SetParent(_parent.transform);
             Vertices.Add(go);
         }
-        
-        //Ниже грани дублируются из-за симметрии матрицы смежности
-        for (int i = 0; i < Mathf.Sqrt(_shape.AdjacencyMatrix.Length); i++) {
-            for (int j = 0; j < Mathf.Sqrt(_shape.AdjacencyMatrix.Length); j++)
-            {
-                if (_shape.AdjacencyMatrix[i,j] != 0)
-                {
-                    var go = Instantiate(EdgePrefab);
-                    go.SetActive(true);
-                    go.transform.SetParent(_parent.transform);
-                    LineRenderer renderer = go.GetComponent<LineRenderer>();
-                    Edges.Add(renderer);
 
-                    renderer.SetPositions(new Vector3[] 
-                    {
-                        Vertex.ToThridDimensionalSpace(_shape.Vertices[i], PointOfView),
-                        Vertex.ToThridDimensionalSpace(_shape.Vertices[j], PointOfView),
-                    });
-                }
-            }
+	    foreach (var pair in _shape.AdjacencyList)
+        {
+            var go = Instantiate(EdgePrefab);
+            go.SetActive(true);
+            go.transform.SetParent(_parent.transform);
+            LineRenderer renderer = go.GetComponent<LineRenderer>();
+            Edges.Add(renderer);
+
+            renderer.SetPositions(new[] 
+            {
+                Vertex.ToThridDimensionalSpace(_shape.Vertices[pair.Item1], PointOfView),
+                Vertex.ToThridDimensionalSpace(_shape.Vertices[pair.Item2], PointOfView),
+            });
         }
     }
+        
 
     private void Update()
     {
@@ -91,22 +87,15 @@ public class TestVisualization : MonoBehaviour {
             Vertices[i].transform.position = Vertex.ToThridDimensionalSpace(_shape.Vertices[i], PointOfView);
         }
 
-        int index = 0;
-        for (int i = 0; i < Mathf.Sqrt(_shape.AdjacencyMatrix.Length); i++)
+        for (int i = 0; i < _shape.AdjacencyList.Count; i++)
         {
-            for (int j = 0; j < Mathf.Sqrt(_shape.AdjacencyMatrix.Length); j++)
+            LineRenderer renderer = Edges[i];
+    
+            renderer.SetPositions(new[]
             {
-                if (_shape.AdjacencyMatrix[i, j] != 0)
-                {
-                    LineRenderer renderer = Edges[index++];
-
-                    renderer.SetPositions(new Vector3[]
-                    {
-                        Vertex.ToThridDimensionalSpace(_shape.Vertices[i], PointOfView),
-                        Vertex.ToThridDimensionalSpace(_shape.Vertices[j], PointOfView),
-                    });
-                }
-            }
+                Vertex.ToThridDimensionalSpace(_shape.Vertices[_shape.AdjacencyList[i].Item1], PointOfView),
+                Vertex.ToThridDimensionalSpace(_shape.Vertices[_shape.AdjacencyList[i].Item2], PointOfView),
+            });
         }
     }
 }

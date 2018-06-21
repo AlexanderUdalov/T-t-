@@ -13,15 +13,16 @@ namespace ShapeMetaData
     {
         private static readonly Dictionary<ShapeType, Func<Shape> > CreationFuncs = new Dictionary<ShapeType, Func<Shape>>
         {
-            [ShapeType.Pentachoron]    = CreatePentachoronData,
-            [ShapeType.Tesseract]      = CreateTesseractData,
-            [ShapeType.Hexadecachoron] = CreateHexadecachoronData,
+            [ShapeType.Pentachoron]      = CreatePentachoronData,
+            [ShapeType.Tesseract]        = CreateTesseractData,
+            [ShapeType.Hexadecachoron]   = CreateHexadecachoronData,
             [ShapeType.Icositetrachoron] = CreateIcositetrachoronData
         };
         
         public static void GenerateDataFile(ShapeType shapeType)
         {
             Shape shape = CreationFuncs[shapeType]();
+            CalculateAdjacencyList(shape.AdjacencyList, shape.Vertices, shape.AdjacencyList.Capacity);
             
             string data = JsonConvert.SerializeObject(shape);
             File.WriteAllText(
@@ -31,7 +32,7 @@ namespace ShapeMetaData
 
         private static Shape CreatePentachoronData()
         {
-            Shape pentachoron = new Shape(5)
+            Shape pentachoron = new Shape(5, 10)
             {
                 Vertices =
                 {
@@ -43,102 +44,33 @@ namespace ShapeMetaData
                 }
             };
 
-            for (int i = 0; i < pentachoron.AdjacencyMatrix.GetLength(0); i++)
-                for (int j = 0; j < pentachoron.AdjacencyMatrix.GetLength(0); j++)
-                    pentachoron.AdjacencyMatrix[i, j] = 1;
-
             return pentachoron;
         }
 
         private static Shape CreateTesseractData()
         {
-            Shape tesseract = new Shape(16);
+            Shape tesseract = new Shape(16, 32);
             InitVerticesTesseract(tesseract.Vertices, 0);
-
-            //Matrix initializing
-            for (int i = 0; i < 16; i += 4)
-            {
-                tesseract.AdjacencyMatrix[i, i + 1] = 1;
-                tesseract.AdjacencyMatrix[i + 1, i + 3] = 1;
-                tesseract.AdjacencyMatrix[i + 3, i + 2] = 1;
-                tesseract.AdjacencyMatrix[i + 2, i] = 1;
-            }
-            for (int i = 0; i < 4; i++)
-            {
-                tesseract.AdjacencyMatrix[i, i + 4] = 1;
-            }
-            for (int i = 8; i < 12; i++)
-            {
-                tesseract.AdjacencyMatrix[i, i + 4] = 1;
-            }
-            for (int i = 0; i < 8; i++)
-            {
-                tesseract.AdjacencyMatrix[i, i + 8] = 1;
-            }
-
             return tesseract;
         }
 
         private static Shape CreateHexadecachoronData()
         {
-            Shape hexadecachoron = new Shape(8);
+            Shape hexadecachoron = new Shape(8, 24);
             InitVerticesHexadecachoron(hexadecachoron.Vertices, 0);
-
-            for (int i = 0; i < hexadecachoron.AdjacencyMatrix.GetLength(0); i++)
-                for (int j = 0; j < hexadecachoron.AdjacencyMatrix.GetLength(0); j++)
-                    if (Math.Abs(i - j) != 4)
-                        hexadecachoron.AdjacencyMatrix[i, j] = 1;
-            
             return hexadecachoron;
         }
 
         [SuppressMessage("ReSharper", "CompareOfFloatsByEqualityOperator")]
         private static Shape CreateIcositetrachoronData()
         {
-            Shape icositetrachoron = new Shape(24);
+            Shape icositetrachoron = new Shape(24, 96);
 
             InitVerticesTesseract(icositetrachoron.Vertices, 0);
             InitVerticesHexadecachoron(icositetrachoron.Vertices, 16);
+            
             for (int i = 16; i < 24; i++)
                 icositetrachoron.Vertices[i] *= 2;
-
-            for (int i = 0; i < icositetrachoron.Vertices.Length - 1; i++)
-            {
-                for (int j = i + 1; j < icositetrachoron.Vertices.Length; j++)
-                {
-                    // ребром соединены те вершины, у которых все четыре координаты различаются на 1
-                    // или одна из координат различается на 2, а остальные совпадают
-                    if (Math.Abs(icositetrachoron.Vertices[i].x - icositetrachoron.Vertices[j].x) == 1f &&
-                        Math.Abs(icositetrachoron.Vertices[i].y - icositetrachoron.Vertices[j].y) == 1f &&
-                        Math.Abs(icositetrachoron.Vertices[i].z - icositetrachoron.Vertices[j].z) == 1f &&
-                        Math.Abs(icositetrachoron.Vertices[i].w - icositetrachoron.Vertices[j].w) == 1f
-                        ||
-                        Math.Abs(icositetrachoron.Vertices[i].x - icositetrachoron.Vertices[j].x) == 2f &&
-                        icositetrachoron.Vertices[i].y == icositetrachoron.Vertices[j].y &&
-                        icositetrachoron.Vertices[i].z == icositetrachoron.Vertices[j].z &&
-                        icositetrachoron.Vertices[i].w == icositetrachoron.Vertices[j].w
-                        ||
-                        Math.Abs(icositetrachoron.Vertices[i].y - icositetrachoron.Vertices[j].y) == 2f &&
-                        icositetrachoron.Vertices[i].x == icositetrachoron.Vertices[j].x &&
-                        icositetrachoron.Vertices[i].z == icositetrachoron.Vertices[j].z &&
-                        icositetrachoron.Vertices[i].w == icositetrachoron.Vertices[j].w
-                        ||
-                        Math.Abs(icositetrachoron.Vertices[i].z - icositetrachoron.Vertices[j].z) == 2f &&
-                        icositetrachoron.Vertices[i].x == icositetrachoron.Vertices[j].x &&
-                        icositetrachoron.Vertices[i].y == icositetrachoron.Vertices[j].y &&
-                        icositetrachoron.Vertices[i].w == icositetrachoron.Vertices[j].w
-                        ||
-                        Math.Abs(icositetrachoron.Vertices[i].w - icositetrachoron.Vertices[j].w) == 2f &&
-                        icositetrachoron.Vertices[i].x == icositetrachoron.Vertices[j].x &&
-                        icositetrachoron.Vertices[i].y == icositetrachoron.Vertices[j].y &&
-                        icositetrachoron.Vertices[i].z == icositetrachoron.Vertices[j].z
-                        )
-                    {
-                        icositetrachoron.AdjacencyMatrix[i, j] = 1;
-                        icositetrachoron.AdjacencyMatrix[j, i] = 1;
-                    }
-                }
-            }
 
             return icositetrachoron;
         }
@@ -178,6 +110,40 @@ namespace ShapeMetaData
             vertices[startIndex + 5] = new Vertex(0, -1, 0, 0);
             vertices[startIndex + 6] = new Vertex(0, 0, -1, 0);
             vertices[startIndex + 7] = new Vertex(0, 0, 0, -1);
+        }
+
+        private static void CalculateAdjacencyList(List<Tuple<int, int>> adjacencyList, Vertex[] vertices, int expectedNumberOfEdgese)
+        {
+            float[][] distances = new float[vertices.Length][];
+            float minDistance = Single.MaxValue;
+            
+            for (int i = vertices.Length - 1; i >= 1; i--)
+            {
+                distances[i] = new float[i];
+                
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    float curDistance = Vertex.Distance(vertices[i], vertices[j]);
+                    distances[i][j] = curDistance;
+
+                    if (curDistance < minDistance)
+                        minDistance = curDistance;
+                }
+            }
+
+            for (int i = 1; i < distances.GetLength(0); i++)
+            {
+                for (int j = 0; j < distances[i].Length; j++)
+                {
+                    if (Math.Abs(distances[i][j] - minDistance) < 0.00001f)
+                        adjacencyList.Add(new Tuple<int, int>(i, j));
+                }
+            }
+            
+            
+            if (adjacencyList.Count != expectedNumberOfEdgese)
+                throw new MetaDataGenerationException(
+                    $"Expected number of edges = {expectedNumberOfEdgese}, created = {adjacencyList.Count}");
         }
     }
 }
