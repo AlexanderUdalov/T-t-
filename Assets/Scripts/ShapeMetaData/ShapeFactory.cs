@@ -23,8 +23,11 @@ namespace ShapeMetaData
 			if (Application.platform == RuntimePlatform.OSXEditor ||
 			    Application.platform == RuntimePlatform.OSXPlayer)
 				url = "file://" + url;
-			
-			return new WWW(url).text;
+
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
+            return File.ReadAllText(url);
+#endif
+            return new WWW(url).text;
 		}
 		
 	}

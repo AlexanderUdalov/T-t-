@@ -263,3 +263,5 @@ __pycache__/
 /Temp
 /Tεtα.sln
 /Assembly-CSharp.csproj
+/Builds/StandaloneWindows64/Tεtα_0.01a1
+*.csproj

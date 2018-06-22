@@ -40,7 +40,7 @@ PlayerSettings:
     width: 1
     height: 1
   m_SplashScreenLogos:
-  - logo: {fileID: 21300000, guid: e61b1a4aceaf1154398fdc267b6625a4, type: 3}
+  - logo: {fileID: 21300000, guid: 49d75cd770221ca47a7165dcaeba1405, type: 3}
     duration: 2
   m_VirtualRealitySplashScreen: {fileID: 0}
   m_HolographicTrackingLossScreen: {fileID: 0}
@@ -156,7 +156,7 @@ PlayerSettings:
   buildNumber: {}
   AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 19
-  AndroidTargetSdkVersion: 25
+  AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
   aotOptions: 
   stripEngineCode: 1
@@ -259,7 +259,7 @@ PlayerSettings:
   - m_BuildTarget: 
     m_Icons:
     - serializedVersion: 2
-      m_Icon: {fileID: 2800000, guid: 8f63b4189f67ceb4e8d0651e9d8328eb, type: 3}
+      m_Icon: {fileID: 2800000, guid: 0ba4d5ef8ee58fd479e3e754b3b73d00, type: 3}
       m_Width: 128
       m_Height: 128
       m_Kind: 0
