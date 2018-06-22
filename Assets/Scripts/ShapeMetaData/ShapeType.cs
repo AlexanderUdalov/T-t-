@@ -2,6 +2,6 @@
 {
     public enum ShapeType
     {
-        Pentachoron, Tesseract, Hexadecachoron, Icositetrachoron, Hecatonicosachoron, Hexacosichoron
+        Pentachoron, Tesseract, Hexadecachoron, Icositetrachoron, Hexacosichoron
     }
 }

@@ -10,16 +10,15 @@ namespace ShapeMetaData
 {
     public static class MetaDataGenerator
     {
-        private static readonly float F = (1 + Mathf.Sqrt(5)) / 2;
+        private static readonly float F = (float) ((1 + Math.Sqrt(5)) / 2);
 
         private static readonly Dictionary<ShapeType, Func<Shape> > CreationFuncs = new Dictionary<ShapeType, Func<Shape>>
         {
-            [ShapeType.Pentachoron]        = CreatePentachoronData,
-            [ShapeType.Tesseract]          = CreateTesseractData,
-            [ShapeType.Hexadecachoron]     = CreateHexadecachoronData,
-            [ShapeType.Icositetrachoron]   = CreateIcositetrachoronData,
-            [ShapeType.Hecatonicosachoron] = CreateHecatonicosachoronData,
-            [ShapeType.Hexacosichoron]     = CreateHexacosichoronData
+            [ShapeType.Pentachoron]      = CreatePentachoronData,
+            [ShapeType.Tesseract]        = CreateTesseractData,
+            [ShapeType.Hexadecachoron]   = CreateHexadecachoronData,
+            [ShapeType.Icositetrachoron] = CreateIcositetrachoronData,
+            [ShapeType.Hexacosichoron]   = CreateHexacosichoronData
         };
         
         public static void GenerateDataFile(ShapeType shapeType)
@@ -62,25 +61,12 @@ namespace ShapeMetaData
             return icositetrachoron;
         }
 
-        private static Shape CreateHecatonicosachoronData()
-        {
-            Shape hecatonicosachoron = new Shape(600, 1200);
-            InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {0f, 0f, 2f, 2f}, 0, false, 24);
-            InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {1f, 1f, 1f, Mathf.Sqrt(5)}, 24, false, 64);
-            InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {F, F, F, 1/(F*F)}, 88, false, 64);
-            InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {1/F, 1/F, 1/F, F*F}, 152, false, 64);
-            InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {0f, 1f, 1/(F*F), F*F}, 216, true, 96);
-            InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {0f, 1/F, F, Mathf.Sqrt(5)}, 312, true, 96);
-            InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {1f, 2f, 1/F, F}, 408, true, 192);
-            return hecatonicosachoron;
-        }
-
         private static Shape CreateHexacosichoronData()
         {
             Shape hexacosichoron = new Shape(120, 720);
-            InitVerticesTesseract(hexacosichoron.Vertices, 0);
-            InitVerticesHexadecachoron(hexacosichoron.Vertices, 16);
-            InitVerticesPermutation(hexacosichoron.Vertices, new[] {0f, 1f, F, 1/F}, 16 + 8, true, 96);
+            InitVerticesTesseract(hexacosichoron.Vertices, 0, 3);
+            InitVerticesHexadecachoron(hexacosichoron.Vertices, 16, 6);
+            InitVerticesEvenPermutationNoRepetitions(hexacosichoron.Vertices, new [] {0, 1, F, 1/F}, 16 + 8, 96, 3);
             return hexacosichoron;
         }
 
@@ -130,10 +116,10 @@ namespace ShapeMetaData
             vertices[startIndex + 7] = multiplier * new Vertex(0, 0, 0, -1);
         }
 
-        private static void InitVerticesPermutation(Vertex[] vertices, float[] numbers, int startIndex, bool even,
+        private static void InitVerticesEvenPermutationNoRepetitions(Vertex[] vertices, float[] numbers, int startIndex,
             int expectedNumberOfVertices, float multiplier = 1f)
         {    
-            HashSet<float[]> unsignedEvenPermutations = new HashSet<float[]>(new FloatArrayComparer());
+            List<float[]> unsignedEvenPermutations = new List<float[]>();
             int numOfPermutations = 4.Factorial();
 
             for (int i = 0; i < numOfPermutations; i++)
@@ -148,8 +134,8 @@ namespace ShapeMetaData
                     optionsLeft.RemoveAt(index);
                 }
                 
-                if (even && !IsPermutationEven(currentPermutation)) continue;
-                unsignedEvenPermutations.Add(currentPermutation);
+                if (IsPermutationEven(currentPermutation))
+                    unsignedEvenPermutations.Add(currentPermutation);
             }
 
             int addIndex = startIndex;
@@ -222,8 +208,11 @@ namespace ShapeMetaData
                     $"Expected number of edges = {expectedNumberOfEdgese}, created = {adjacencyList.Count}");
         }
 
-        private static int Factorial(this int count) =>   
-            count == 0 ? 1 : Enumerable.Range(1, count).Aggregate((i, j) => i*j);
-        
+        private static int Factorial(this int count)
+        {
+            return count == 0
+                ? 1
+                : Enumerable.Range(1, count).Aggregate((i, j) => i*j);
+        }
     }
 }
