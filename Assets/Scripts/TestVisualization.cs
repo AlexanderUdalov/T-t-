@@ -28,7 +28,63 @@ public class TestVisualization : MonoBehaviour {
         yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Icositetrachoron));
         _parent = new GameObject("ShapeParent");
 
-		foreach (var vertex in Shape.Vertices)
+        BuildShapeView();
+    }
+
+    public void Show5cell() => StartCoroutine(Show5cellCoroutine());
+    public void Show8cell() => StartCoroutine(Show8cellCoroutine());
+    public void Show16cell() => StartCoroutine(Show16cellCoroutine());
+    public void Show24cell() => StartCoroutine(Show24cellCoroutine());
+    public void Show120cell() => StartCoroutine(Show120cellCoroutine());
+    public void Show600cell() => StartCoroutine(Show600cellCoroutine());
+
+    private void RebuildShape()
+    {
+        Destroy(_parent);
+        _parent = new GameObject("ShapeParent");
+        BuildShapeView();
+    }
+
+    private IEnumerator Show5cellCoroutine()
+    {
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Pentachoron));
+        RebuildShape();
+    }
+    private IEnumerator Show8cellCoroutine()
+    {
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Tesseract));
+        RebuildShape();
+    }
+    private IEnumerator Show16cellCoroutine()
+    {
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Hexadecachoron));
+        RebuildShape();
+    }
+    private IEnumerator Show24cellCoroutine()
+    {
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Icositetrachoron));
+        RebuildShape();
+    }
+    private IEnumerator Show120cellCoroutine()
+    {
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Hecatonicosachoron));
+        RebuildShape();
+    }
+    private IEnumerator Show600cellCoroutine()
+    {
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Hexacosichoron));
+        RebuildShape();
+    }
+
+
+
+
+    public void BuildShapeView()
+    {
+        Vertices.Clear();
+        Edges.Clear();
+
+        foreach (var vertex in Shape.Vertices)
         {
             var go = Instantiate(VertexPrefab, Vertex.ToThridDimensionalSpace(vertex, PointOfView), Quaternion.identity);
             go.SetActive(true);
@@ -36,7 +92,7 @@ public class TestVisualization : MonoBehaviour {
             Vertices.Add(go);
         }
 
-	    foreach (var pair in Shape.AdjacencyList)
+        foreach (var pair in Shape.AdjacencyList)
         {
             var go = Instantiate(EdgePrefab);
             go.SetActive(true);
@@ -44,7 +100,7 @@ public class TestVisualization : MonoBehaviour {
             LineRenderer renderer = go.GetComponent<LineRenderer>();
             Edges.Add(renderer);
 
-            renderer.SetPositions(new[] 
+            renderer.SetPositions(new[]
             {
                 Vertex.ToThridDimensionalSpace(Shape.Vertices[pair.Item1], PointOfView),
                 Vertex.ToThridDimensionalSpace(Shape.Vertices[pair.Item2], PointOfView),
@@ -83,7 +139,7 @@ public class TestVisualization : MonoBehaviour {
 
     public void RotateShape(float angle, Planes plane)
     {
-        if (Shape == null)
+        if (Shape == null || angle == 0)
             return;
         
         Shape.Rotate(angle * Time.deltaTime, plane);
