@@ -35,30 +35,39 @@ namespace ShapeMetaData
 
         private static Shape CreatePentachoronData()
         {
-            Shape pentachoron = new Shape(5, 10);
-            InitVerticesPentachoron(pentachoron.Vertices, 0);
+            Shape pentachoron = new Shape(5, 10)
+            {
+                Vertices =
+                {
+                    [0] =  new Vertex(1, 1, 1, 0),
+                    [1] =  new Vertex(1, -1, -1, 0),
+                    [2] =  new Vertex(-1, 1, -1, 0),
+                    [3] =  new Vertex(-1, -1, 1, 0),
+                    [4] =  new Vertex(0, 0, 0, Mathf.Sqrt(5))
+                }
+            };
             return pentachoron;
         }
 
         private static Shape CreateTesseractData()
         {
             Shape tesseract = new Shape(16, 32);
-            InitVerticesTesseract(tesseract.Vertices, 0);
+            InitVerticesPermutation(tesseract.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
             return tesseract;
         }
 
         private static Shape CreateHexadecachoronData()
         {
             Shape hexadecachoron = new Shape(8, 24);
-            InitVerticesHexadecachoron(hexadecachoron.Vertices, 0, 3);
+            InitVerticesPermutation(hexadecachoron.Vertices, new[] {1f, 0f, 0f, 0f}, 0, false, 8);
             return hexadecachoron;
         }
 
         private static Shape CreateIcositetrachoronData()
         {
             Shape icositetrachoron = new Shape(24, 96);
-            InitVerticesTesseract(icositetrachoron.Vertices, 0);
-            InitVerticesHexadecachoron(icositetrachoron.Vertices, 16, 2);
+            InitVerticesPermutation(icositetrachoron.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
+            InitVerticesPermutation(icositetrachoron.Vertices, new[] {2f, 0f, 0f, 0f}, 16, false, 8);
             return icositetrachoron;
         }
 
@@ -78,58 +87,12 @@ namespace ShapeMetaData
         private static Shape CreateHexacosichoronData()
         {
             Shape hexacosichoron = new Shape(120, 720);
-            InitVerticesTesseract(hexacosichoron.Vertices, 0);
-            InitVerticesHexadecachoron(hexacosichoron.Vertices, 16);
+            InitVerticesPermutation(hexacosichoron.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
+            InitVerticesPermutation(hexacosichoron.Vertices, new[] {2f, 0f, 0f, 0f}, 16, false, 8);
             InitVerticesPermutation(hexacosichoron.Vertices, new[] {0f, 1f, F, 1/F}, 16 + 8, true, 96);
             return hexacosichoron;
         }
-
-        private static void InitVerticesPentachoron(Vertex[] vertices, int startIndex, float multiplier = 1f)
-        {
-            vertices[startIndex]     = multiplier * new Vertex(1, 1, 1, 0);
-            vertices[startIndex + 1] = multiplier * new Vertex(1, -1, -1, 0);
-            vertices[startIndex + 2] = multiplier * new Vertex(-1, 1, -1, 0);
-            vertices[startIndex + 3] = multiplier * new Vertex(-1, -1, 1, 0);
-            vertices[startIndex + 4] = multiplier * new Vertex(0, 0, 0, (float) Math.Sqrt(5));
-        }
         
-        private static void InitVerticesTesseract(Vertex[] vertices, int startIndex, float multiplier = 1f)
-        {
-            int signX = 1, signY = 1, signZ = 1, signW = 1;
-
-            for (int i1 = 0; i1 < 2; i1++)
-            {
-                for (int i2 = 0; i2 < 2; i2++)
-                {
-                    for (int i3 = 0; i3 < 2; i3++)
-                    {
-                        for (int i4 = 0; i4 < 2; i4++)
-                        {
-                            vertices[startIndex + i1 * 8 + i2 * 4 + i3 * 2 + i4] = 
-                                multiplier * new Vertex(signX, signY, signZ, signW);
-
-                            signX *= -1;
-                        }
-                        signY *= -1;
-                    }
-                    signZ *= -1;
-                }
-                signW *= -1;
-            }
-        }
-
-        private static void InitVerticesHexadecachoron(Vertex[] vertices, int startIndex, float multiplier = 1f)
-        {
-            vertices[startIndex]     = multiplier * new Vertex(1, 0, 0, 0);
-            vertices[startIndex + 1] = multiplier * new Vertex(0, 1, 0, 0);
-            vertices[startIndex + 2] = multiplier * new Vertex(0, 0, 1, 0);
-            vertices[startIndex + 3] = multiplier * new Vertex(0, 0, 0, 1);
-            vertices[startIndex + 4] = multiplier * new Vertex(-1, 0, 0, 0);
-            vertices[startIndex + 5] = multiplier * new Vertex(0, -1, 0, 0);
-            vertices[startIndex + 6] = multiplier * new Vertex(0, 0, -1, 0);
-            vertices[startIndex + 7] = multiplier * new Vertex(0, 0, 0, -1);
-        }
-
         private static void InitVerticesPermutation(Vertex[] vertices, float[] numbers, int startIndex, bool even,
             int expectedNumberOfVertices, float multiplier = 1f)
         {    

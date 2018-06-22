@@ -21,14 +21,14 @@ public class TestVisualization : MonoBehaviour {
 
     //Если поставить w = 1 все сломается =(
     public Vector4 PointOfView = new Vector4(0, 0, 1, 10);
-    private Shape _shape;
-    
-	void Start () 
+    public Shape Shape { get; set; }
+
+    IEnumerator Start () 
 	{
-        _shape = ShapeFactory.CreateShape(ShapeType.Hecatonicosachoron);
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Icositetrachoron));
         _parent = new GameObject("ShapeParent");
 
-		foreach (var vertex in _shape.Vertices)
+		foreach (var vertex in Shape.Vertices)
         {
             var go = Instantiate(VertexPrefab, Vertex.ToThridDimensionalSpace(vertex, PointOfView), Quaternion.identity);
             go.SetActive(true);
@@ -36,7 +36,7 @@ public class TestVisualization : MonoBehaviour {
             Vertices.Add(go);
         }
 
-	    foreach (var pair in _shape.AdjacencyList)
+	    foreach (var pair in Shape.AdjacencyList)
         {
             var go = Instantiate(EdgePrefab);
             go.SetActive(true);
@@ -46,8 +46,8 @@ public class TestVisualization : MonoBehaviour {
 
             renderer.SetPositions(new[] 
             {
-                Vertex.ToThridDimensionalSpace(_shape.Vertices[pair.Item1], PointOfView),
-                Vertex.ToThridDimensionalSpace(_shape.Vertices[pair.Item2], PointOfView),
+                Vertex.ToThridDimensionalSpace(Shape.Vertices[pair.Item1], PointOfView),
+                Vertex.ToThridDimensionalSpace(Shape.Vertices[pair.Item2], PointOfView),
             });
         }
     }
@@ -83,21 +83,24 @@ public class TestVisualization : MonoBehaviour {
 
     public void RotateShape(float angle, Planes plane)
     {
-        _shape.Rotate(angle * Time.deltaTime, plane);
+        if (Shape == null)
+            return;
+        
+        Shape.Rotate(angle * Time.deltaTime, plane);
 
-        for (int i = 0; i < _shape.Vertices.Length; i++)
+        for (int i = 0; i < Shape.Vertices.Length; i++)
         {
-            Vertices[i].transform.position = Vertex.ToThridDimensionalSpace(_shape.Vertices[i], PointOfView);
+            Vertices[i].transform.position = Vertex.ToThridDimensionalSpace(Shape.Vertices[i], PointOfView);
         }
 
-        for (int i = 0; i < _shape.AdjacencyList.Count; i++)
+        for (int i = 0; i < Shape.AdjacencyList.Count; i++)
         {
             LineRenderer renderer = Edges[i];
     
             renderer.SetPositions(new[]
             {
-                Vertex.ToThridDimensionalSpace(_shape.Vertices[_shape.AdjacencyList[i].Item1], PointOfView),
-                Vertex.ToThridDimensionalSpace(_shape.Vertices[_shape.AdjacencyList[i].Item2], PointOfView),
+                Vertex.ToThridDimensionalSpace(Shape.Vertices[Shape.AdjacencyList[i].Item1], PointOfView),
+                Vertex.ToThridDimensionalSpace(Shape.Vertices[Shape.AdjacencyList[i].Item2], PointOfView),
             });
         }
     }
