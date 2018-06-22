@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using UnityEngine;
 using FourDimensionalSpace;
 using ShapeMetaData;
@@ -18,10 +22,10 @@ public class TestVisualization : MonoBehaviour {
     //Если поставить w = 1 все сломается =(
     public Vector4 PointOfView = new Vector4(0, 0, 1, 10);
     private Shape _shape;
-
+    
 	void Start () 
 	{
-        _shape = ShapeFactory.CreateShape(ShapeType.Hexacosichoron);
+        _shape = ShapeFactory.CreateShape(ShapeType.Hecatonicosachoron);
         _parent = new GameObject("ShapeParent");
 
 		foreach (var vertex in _shape.Vertices)
