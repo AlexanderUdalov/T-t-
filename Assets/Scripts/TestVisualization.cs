@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
 using FourDimensionalSpace;
 using ShapeMetaData;
@@ -31,12 +28,8 @@ public class TestVisualization : MonoBehaviour {
         BuildShapeView();
     }
 
-    public void Show5cell() => StartCoroutine(Show5cellCoroutine());
-    public void Show8cell() => StartCoroutine(Show8cellCoroutine());
-    public void Show16cell() => StartCoroutine(Show16cellCoroutine());
-    public void Show24cell() => StartCoroutine(Show24cellCoroutine());
-    public void Show120cell() => StartCoroutine(Show120cellCoroutine());
-    public void Show600cell() => StartCoroutine(Show600cellCoroutine());
+    public void ShowShape(ShapeType shapeType) => StartCoroutine(ShowShapeCoroutine(shapeType));
+    public void ShowShape(int shapeType) => StartCoroutine(ShowShapeCoroutine((ShapeType) shapeType));
 
     private void RebuildShape()
     {
@@ -45,39 +38,11 @@ public class TestVisualization : MonoBehaviour {
         BuildShapeView();
     }
 
-    private IEnumerator Show5cellCoroutine()
+    private IEnumerator ShowShapeCoroutine(ShapeType shapeType)
     {
-        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Pentachoron));
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, shapeType));
         RebuildShape();
     }
-    private IEnumerator Show8cellCoroutine()
-    {
-        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Tesseract));
-        RebuildShape();
-    }
-    private IEnumerator Show16cellCoroutine()
-    {
-        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Hexadecachoron));
-        RebuildShape();
-    }
-    private IEnumerator Show24cellCoroutine()
-    {
-        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Icositetrachoron));
-        RebuildShape();
-    }
-    private IEnumerator Show120cellCoroutine()
-    {
-        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Hecatonicosachoron));
-        RebuildShape();
-    }
-    private IEnumerator Show600cellCoroutine()
-    {
-        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Hexacosichoron));
-        RebuildShape();
-    }
-
-
-
 
     public void BuildShapeView()
     {
