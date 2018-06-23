@@ -22,7 +22,7 @@ public class TestVisualization : MonoBehaviour {
 
     IEnumerator Start () 
 	{
-        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Icositetrachoron));
+        yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Cell24));
         _parent = new GameObject("ShapeParent");
 
         BuildShapeView();

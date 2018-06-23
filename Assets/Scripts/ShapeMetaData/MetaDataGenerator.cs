@@ -14,12 +14,12 @@ namespace ShapeMetaData
 
         private static readonly Dictionary<ShapeType, Func<Shape> > CreationFuncs = new Dictionary<ShapeType, Func<Shape>>
         {
-            [ShapeType.Pentachoron]        = CreatePentachoronData,
-            [ShapeType.Tesseract]          = CreateTesseractData,
-            [ShapeType.Hexadecachoron]     = CreateHexadecachoronData,
-            [ShapeType.Icositetrachoron]   = CreateIcositetrachoronData,
-            [ShapeType.Hecatonicosachoron] = CreateHecatonicosachoronData,
-            [ShapeType.Hexacosichoron]     = CreateHexacosichoronData
+            [ShapeType.Cell5]   = Create5CellData,
+            [ShapeType.Cell8]   = Create8CellData,
+            [ShapeType.Cell16]  = Create16CellData,
+            [ShapeType.Cell24]  = Create24CellData,
+            [ShapeType.Cell120] = Create120CellData,
+            [ShapeType.Cell600] = Create600CellData
         };
         
         public static void GenerateDataFile(ShapeType shapeType)
@@ -33,7 +33,7 @@ namespace ShapeMetaData
                 data);
         }
 
-        private static Shape CreatePentachoronData()
+        private static Shape Create5CellData()
         {
             Shape pentachoron = new Shape(5, 10)
             {
@@ -49,21 +49,21 @@ namespace ShapeMetaData
             return pentachoron;
         }
 
-        private static Shape CreateTesseractData()
+        private static Shape Create8CellData()
         {
             Shape tesseract = new Shape(16, 32);
             InitVerticesPermutation(tesseract.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
             return tesseract;
         }
 
-        private static Shape CreateHexadecachoronData()
+        private static Shape Create16CellData()
         {
             Shape hexadecachoron = new Shape(8, 24);
             InitVerticesPermutation(hexadecachoron.Vertices, new[] {1f, 0f, 0f, 0f}, 0, false, 8);
             return hexadecachoron;
         }
 
-        private static Shape CreateIcositetrachoronData()
+        private static Shape Create24CellData()
         {
             Shape icositetrachoron = new Shape(24, 96);
             InitVerticesPermutation(icositetrachoron.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
@@ -71,7 +71,7 @@ namespace ShapeMetaData
             return icositetrachoron;
         }
 
-        private static Shape CreateHecatonicosachoronData()
+        private static Shape Create120CellData()
         {
             Shape hecatonicosachoron = new Shape(600, 1200);
             InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {0f, 0f, 2f, 2f}, 0, false, 24);
@@ -84,7 +84,7 @@ namespace ShapeMetaData
             return hecatonicosachoron;
         }
 
-        private static Shape CreateHexacosichoronData()
+        private static Shape Create600CellData()
         {
             Shape hexacosichoron = new Shape(120, 720);
             InitVerticesPermutation(hexacosichoron.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
