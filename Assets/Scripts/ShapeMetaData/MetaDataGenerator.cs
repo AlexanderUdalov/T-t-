@@ -153,32 +153,24 @@ namespace ShapeMetaData
 
         private static void CalculateAdjacencyList(List<Tuple<int, int>> adjacencyList, Vertex[] vertices, int expectedNumberOfEdgese)
         {
-            float[][] distances = new float[vertices.Length][];
             float minDistance = Single.MaxValue;
             
-            for (int i = vertices.Length - 1; i >= 1; i--)
+            for (int i = 0; i < vertices.Length - 1; i++)
             {
-                distances[i] = new float[i];
-                
-                for (int j = i - 1; j >= 0; j--)
+                for (int j = i + 1; j < vertices.Length; j++)
                 {
                     float curDistance = Vertex.Distance(vertices[i], vertices[j]);
-                    distances[i][j] = curDistance;
 
-                    if (curDistance < minDistance)
-                        minDistance = curDistance;
-                }
-            }
-
-            for (int i = 1; i < distances.GetLength(0); i++)
-            {
-                for (int j = 0; j < distances[i].Length; j++)
-                {
-                    if (Math.Abs(distances[i][j] - minDistance) < 0.00001f)
+                    if (Math.Abs(curDistance - minDistance) < 0.00001f)
                         adjacencyList.Add(new Tuple<int, int>(i, j));
+                    else if (curDistance < minDistance)
+                    {
+                        adjacencyList.Clear();
+                        adjacencyList.Add(new Tuple<int, int>(i, j));
+                        minDistance = curDistance;
+                    }
                 }
             }
-            
             
             if (adjacencyList.Count != expectedNumberOfEdgese)
                 throw new MetaDataGenerationException(
