@@ -21,21 +21,32 @@ namespace ShapeMetaData
             [ShapeType.Cell120] = Create120CellData,
             [ShapeType.Cell600] = Create600CellData
         };
+
+        private static readonly Dictionary<ShapeType, int> VerticesOnFace = new Dictionary<ShapeType, int>
+        {
+            [ShapeType.Cell5]   = 3,
+            [ShapeType.Cell8]   = 4,
+            [ShapeType.Cell16]  = 3,
+            [ShapeType.Cell24]  = 3,
+            [ShapeType.Cell120] = 5,
+            [ShapeType.Cell600] = 3
+        };
         
         public static void GenerateDataFile(ShapeType shapeType)
-        {            
+        {    
             Shape shape = CreationFuncs[shapeType]();
             CalculateAdjacencyList(shape.AdjacencyList, shape.Vertices, shape.AdjacencyList.Capacity);
+            CalculateFaces(shape.Faces, shape.Vertices, shape.AdjacencyList, VerticesOnFace[shapeType], shape.Faces.Capacity);
             
             string data = JsonConvert.SerializeObject(shape);
-            File.WriteAllText(
-                Path.Combine(Application.streamingAssetsPath, "ShapeMetaData", shapeType + ".json"),
-                data);
+            string writePath = Path.Combine(Application.streamingAssetsPath, "ShapeMetaData", shapeType + ".json");
+                        
+            File.WriteAllText(writePath, data);
         }
 
         private static Shape Create5CellData()
         {
-            Shape pentachoron = new Shape(5, 10)
+            Shape pentachoron = new Shape(5, 10, 10)
             {
                 Vertices =
                 {
@@ -51,21 +62,21 @@ namespace ShapeMetaData
 
         private static Shape Create8CellData()
         {
-            Shape tesseract = new Shape(16, 32);
+            Shape tesseract = new Shape(16, 32, 24);
             InitVerticesPermutation(tesseract.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
             return tesseract;
         }
 
         private static Shape Create16CellData()
         {
-            Shape hexadecachoron = new Shape(8, 24);
+            Shape hexadecachoron = new Shape(8, 24, 32);
             InitVerticesPermutation(hexadecachoron.Vertices, new[] {1f, 0f, 0f, 0f}, 0, false, 8);
             return hexadecachoron;
         }
 
         private static Shape Create24CellData()
         {
-            Shape icositetrachoron = new Shape(24, 96);
+            Shape icositetrachoron = new Shape(24, 96, 96);
             InitVerticesPermutation(icositetrachoron.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
             InitVerticesPermutation(icositetrachoron.Vertices, new[] {2f, 0f, 0f, 0f}, 16, false, 8);
             return icositetrachoron;
@@ -73,7 +84,7 @@ namespace ShapeMetaData
 
         private static Shape Create120CellData()
         {
-            Shape hecatonicosachoron = new Shape(600, 1200);
+            Shape hecatonicosachoron = new Shape(600, 1200, 720);
             InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {0f, 0f, 2f, 2f}, 0, false, 24);
             InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {1f, 1f, 1f, Mathf.Sqrt(5)}, 24, false, 64);
             InitVerticesPermutation(hecatonicosachoron.Vertices, new[] {F, F, F, 1/(F*F)}, 88, false, 64);
@@ -86,7 +97,7 @@ namespace ShapeMetaData
 
         private static Shape Create600CellData()
         {
-            Shape hexacosichoron = new Shape(120, 720);
+            Shape hexacosichoron = new Shape(120, 720, 1200);
             InitVerticesPermutation(hexacosichoron.Vertices, new[] {1f, 1f, 1f, 1f}, 0, false, 16);
             InitVerticesPermutation(hexacosichoron.Vertices, new[] {2f, 0f, 0f, 0f}, 16, false, 8);
             InitVerticesPermutation(hexacosichoron.Vertices, new[] {0f, 1f, F, 1/F}, 16 + 8, true, 96);
@@ -151,7 +162,7 @@ namespace ShapeMetaData
             return numberOfInversions % 2 == 0;
         }
 
-        private static void CalculateAdjacencyList(List<Tuple<int, int>> adjacencyList, Vertex[] vertices, int expectedNumberOfEdgese)
+        private static void CalculateAdjacencyList(List<Tuple<int, int>> adjacencyList, Vertex[] vertices, int expectedNumberOfEdges)
         {
             float minDistance = Single.MaxValue;
             
@@ -172,13 +183,81 @@ namespace ShapeMetaData
                 }
             }
             
-            if (adjacencyList.Count != expectedNumberOfEdgese)
+            if (adjacencyList.Count != expectedNumberOfEdges)
                 throw new MetaDataGenerationException(
-                    $"Expected number of edges = {expectedNumberOfEdgese}, created = {adjacencyList.Count}");
+                    $"Expected number of edges = {expectedNumberOfEdges}, created = {adjacencyList.Count}");
+        }
+        
+        private static void CalculateFaces(List<List<int>> faces, Vertex[] vertices,
+            List<Tuple<int, int>> adjacencyList, int limit, int expectedNumberOfFaces)
+        {
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                var color = new byte[vertices.Length];
+                List<int> cycle = new List<int> {i};
+                DFScycle(faces, i, i, adjacencyList, color, -1, limit, cycle);
+            }
+            
+            if (faces.Count != expectedNumberOfFaces)
+                throw new MetaDataGenerationException(
+                    $"Expected number of faces = {expectedNumberOfFaces / 2}, created = {faces.Count / 2}");
+        }
+
+        private static void DFScycle(List<List<int>> faces, int u, int endV, List<Tuple<int, int>> adjacencyList,
+            byte[] color, int unavailableEdge, int limit, List<int> cycle)
+        {
+            if (cycle.Count > limit + 1)
+                return;
+            
+            if (u != endV)
+                color[u] = 1;
+            else if (cycle.Count == limit + 1)
+            {
+                // все циклы приводим к виду, при котором цикл начинается с элемента с минимальным индексом
+                PutMinElementInZeroPosition(cycle);
+                
+                // добавляем найденный цикл только в случае, если раньше он не встречался
+                foreach (var face in faces)
+                    if (cycle.Where((t, i) => t == face[i]).Count() == cycle.Count)
+                        return;
+                
+                faces.Add(cycle);
+                return;
+            }
+            
+            for (int w = 0; w < adjacencyList.Count; w++)
+            {
+                if (w == unavailableEdge)
+                    continue;
+                if (color[adjacencyList[w].Item2] == 0 && adjacencyList[w].Item1 == u)
+                {
+                    List<int> newCycle = new List<int>(cycle) { adjacencyList[w].Item2 };
+                    DFScycle(faces, adjacencyList[w].Item2, endV, adjacencyList, color, w, limit, newCycle);
+                    color[adjacencyList[w].Item2] = 0;
+                }
+                else if (color[adjacencyList[w].Item1] == 0 && adjacencyList[w].Item2 == u)
+                {
+                    List<int> newCycle = new List<int>(cycle) { adjacencyList[w].Item1 };
+                    DFScycle(faces, adjacencyList[w].Item1, endV, adjacencyList, color, w, limit, newCycle);
+                    color[adjacencyList[w].Item1] = 0;
+                }
+            }
+        }
+
+        private static void PutMinElementInZeroPosition(List<int> cycle)
+        {
+            cycle.RemoveAt(cycle.Count - 1);
+            
+            int min = cycle.Min();
+            int minElementIndex = cycle.IndexOf(min);
+
+            for (int i = 0; i < minElementIndex; i++)
+                cycle.Add(cycle[i]);
+            cycle.RemoveRange(0, minElementIndex);
+            cycle.Add(cycle[0]);
         }
 
         private static int Factorial(this int count) =>   
-            count == 0 ? 1 : Enumerable.Range(1, count).Aggregate((i, j) => i*j);
-        
+            count == 0 ? 1 : Enumerable.Range(1, count).Aggregate((i, j) => i*j);   
     }
 }
