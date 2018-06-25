@@ -8,14 +8,13 @@ namespace FourDimensionalSpace
     {
         public Vertex[] Vertices { get; set; }
         public List<Tuple<int, int>> AdjacencyList { get; set; }
-        // все грани с инвертированными (1-2-5-1 и 1-5-2-1-) вариантами
         public List<List<int>> Faces { get; set; }
 
         public Shape(int numberOfVertices, int numberOfEdges, int numberOfFaces)
         {
             Vertices = new Vertex[numberOfVertices];
             AdjacencyList = new List<Tuple<int, int>>(numberOfEdges);
-            Faces = new List<List<int>>(numberOfFaces * 2);
+            Faces = new List<List<int>>(numberOfFaces);
         }
         
         public void Rotate(float angle, Planes plane)

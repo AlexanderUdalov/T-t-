@@ -200,7 +200,7 @@ namespace ShapeMetaData
             
             if (faces.Count != expectedNumberOfFaces)
                 throw new MetaDataGenerationException(
-                    $"Expected number of faces = {expectedNumberOfFaces / 2}, created = {faces.Count / 2}");
+                    $"Expected number of faces = {expectedNumberOfFaces}, created = {faces.Count}");
         }
 
         private static void DFScycle(List<List<int>> faces, int u, int endV, List<Tuple<int, int>> adjacencyList,
@@ -213,12 +213,13 @@ namespace ShapeMetaData
                 color[u] = 1;
             else if (cycle.Count == limit + 1)
             {
-                // все циклы приводим к виду, при котором цикл начинается с элемента с минимальным индексом
+                // все циклы приводим к виду, при котором цикл начинается с вершины с минимальным индексом
                 PutMinElementInZeroPosition(cycle);
                 
                 // добавляем найденный цикл только в случае, если раньше он не встречался
                 foreach (var face in faces)
-                    if (cycle.Where((t, i) => t == face[i]).Count() == cycle.Count)
+                    if (cycle.Where((t, i) => t == face[i]).Count() == cycle.Count ||
+                        cycle.Where((t, i) => t == face[face.Count - i - 1]).Count() == cycle.Count)
                         return;
                 
                 faces.Add(cycle);
