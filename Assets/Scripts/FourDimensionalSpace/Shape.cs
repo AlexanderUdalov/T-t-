@@ -9,8 +9,9 @@ namespace FourDimensionalSpace
         public Vertex[] Vertices { get; set; }
         public List<Tuple<int, int>> AdjacencyList { get; set; }
         public List<List<int>> Faces { get; set; }
+        public List<List<int>> Cells { get; set; }
 
-        public Shape(int numberOfVertices, int numberOfEdges, int numberOfFaces)
+        public Shape(int numberOfVertices, int numberOfEdges, int numberOfFaces, int numberOfCells)
         {
             Vertices = new Vertex[numberOfVertices];
             AdjacencyList = new List<Tuple<int, int>>(numberOfEdges);
