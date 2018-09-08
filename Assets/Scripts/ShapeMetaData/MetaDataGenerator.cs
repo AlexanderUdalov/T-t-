@@ -301,39 +301,115 @@ namespace ShapeMetaData
                     $"Expected number of cells = {expectedNumberOfCells}, created = {shape.Cells.Count}");
         }*/
         
-        private static void CalculateCells(Shape shape, int limit, int expectedNumberOfCells)
+        private static void CalculateCells(Shape shape, int facesOnCellCount, int expectedNumberOfCells)
         {
-            List<int>[] facesAdjacency = new List<int>[shape.Faces.Count];
-            for (int i = 0; i < facesAdjacency.Length; i++)
-                facesAdjacency[i] = new List<int>();
+            //List<int>[] facesAdjacency = new List<int>[shape.Faces.Count];
+            //for (int i = 0; i < facesAdjacency.Length; i++)
+            //    facesAdjacency[i] = new List<int>();
 
-            for (int i = 0; i < shape.Faces.Count - 1; i++)
-                for (int j = i + 1; j < shape.Faces.Count; j++)
-                    if (FacesConnected(shape.Faces[i], shape.Faces[j]))
+            //for (int i = 0; i < shape.Faces.Count - 1; i++)
+            //    for (int j = i + 1; j < shape.Faces.Count; j++)
+            //    {
+            //        if (FacesConnected(shape.Faces[j], shape.Faces[i]))
+            //        {
+            //            facesAdjacency[i].Add(j);
+            //            facesAdjacency[j].Add(i);
+            //            var toDebug = "";
+            //            foreach (var item in shape.Faces[j])
+            //                toDebug += item + ", ";
+
+            //            toDebug += " -- ";
+            //            foreach (var item in shape.Faces[i])
+            //                toDebug += item + ", ";
+
+            //            Debug.Log(toDebug);
+            //        }
+            //    }
+            bool deadlock = true;
+            int cycleCount = 0;
+            while (deadlock)
+            {
+                HashSet<int> avaliableIndexes = new HashSet<int>();
+                for (int i = 0; i < shape.Faces.Count; i++)
+                    avaliableIndexes.Add(i);
+
+                while (avaliableIndexes.Count > 0)
+                {
+                    var newCell = new List<int>();
+                    int lastFaceIndex = -1, preLastFaceIndex = -1;
+
+                    preLastFaceIndex = avaliableIndexes.ElementAt(UnityEngine.Random.Range(0, avaliableIndexes.Count - 1));
+                    for (int j = 0; j < avaliableIndexes.Count; j++)
                     {
-                        facesAdjacency[i].Add(j);
-                        facesAdjacency[j].Add(i);
+                        var currentIndex = avaliableIndexes.ElementAt(j);
+
+                        if (newCell.Contains(currentIndex)) continue;
+                        if (FacesConnected(shape.Faces[preLastFaceIndex], shape.Faces[currentIndex]))
+                        {
+                            lastFaceIndex = currentIndex;
+                            break;
+                        }
                     }
 
-            byte[] used = new byte[shape.Faces.Count];
-            
-            for (int i = 0; i < shape.Faces.Count; i++)
-            {
-                if (used[i] == 1)
-                    continue;
+                    newCell.Add(preLastFaceIndex);
+                    newCell.Add(lastFaceIndex);
 
-                var foundCell = FindCell(i, facesAdjacency, limit, shape.Faces[0].Count - 1);
-                foreach (var faceIndex in foundCell)
-                    used[faceIndex] = 1;
-                shape.Cells.Add(foundCell);
+                    for (int i = 2; i < facesOnCellCount; i++)
+                    {
+                        for (int j = 0; j < avaliableIndexes.Count; j++)
+                        {
+                            var currentIndex = avaliableIndexes.ElementAt(j);
+                            if (newCell.Contains(currentIndex)) continue;
+
+                            if (FacesConnected(shape.Faces[preLastFaceIndex], shape.Faces[currentIndex]) &&
+                                FacesConnected(shape.Faces[lastFaceIndex], shape.Faces[currentIndex]))
+                            {
+                                newCell.Add(currentIndex);
+                                preLastFaceIndex = lastFaceIndex;
+                                lastFaceIndex = currentIndex;
+                                break;
+                            }
+                        }
+                    }
+                    if (newCell.Count != facesOnCellCount)
+                    {
+                        Debug.Log("Too much faces");
+                        cycleCount++;
+                        continue;
+                    }
+
+                    foreach (var item in newCell)
+                        avaliableIndexes.Remove(item);
+
+                    shape.Cells.Add(newCell);
+                    if (cycleCount > 5)
+                        break;
+
+                    if (shape.Cells.Count == expectedNumberOfCells)
+                        deadlock = false;
+                    else shape.Cells = new List<List<int>>(expectedNumberOfCells);
+                }
             }
 
-            for (int i = 0; i < shape.Cells.Count; i++)
-                Debug.Log(i + ": " + shape.Cells[i].ToList().CycleToString());   
-            
-            if (shape.Cells.Count != expectedNumberOfCells)
-                throw new MetaDataGenerationException(
-                    $"Expected number of cells = {expectedNumberOfCells}, created = {shape.Cells.Count}");
+            //byte[] used = new byte[shape.Faces.Count];
+
+            //for (int i = 0; i < shape.Faces.Count; i++)
+            //{
+            //    if (used[i] == 1)
+            //        continue;
+
+            //    var foundCell = FindCell(i, facesAdjacency, facesOnCellCount, shape.Faces[0].Count - 1);
+            //    foreach (var faceIndex in foundCell)
+            //        used[faceIndex] = 1;
+            //    shape.Cells.Add(foundCell);
+            //}
+
+            //for (int i = 0; i < shape.Cells.Count; i++)
+            //    Debug.Log(i + ": " + shape.Cells[i].ToList().CycleToString());   
+
+            //if (shape.Cells.Count != expectedNumberOfCells)
+            //    throw new MetaDataGenerationException(
+            //        $"Expected number of cells = {expectedNumberOfCells}, created = {shape.Cells.Count}");
         }
 
         private static List<int> FindCell(int startIndex, List<int>[] adjacencyList, int limit, int vertexFaceCount)
@@ -412,20 +488,33 @@ namespace ShapeMetaData
 
         private static bool FacesConnected(List<int> f1, List<int> f2)
         {
+            
+
             List<int> edge = new List<int>(f1.Intersect(f2).Distinct());
 
             if (edge.Count != 2)
                 return false;
 
-            return f1.IndexOf(edge[0]) - f1.IndexOf(edge[1]) == f2.IndexOf(edge[1]) - f2.IndexOf(edge[0]) ||
-                   f1.IndexOf(edge[0]) == 0 && f1.IndexOf(edge[1]) == 1 && f2.IndexOf(edge[1]) == f2.Count - 2 ||
-                   f1.IndexOf(edge[1]) == 0 && f1.IndexOf(edge[0]) == 1 && f2.IndexOf(edge[0]) == f2.Count - 2 ||
-                   f2.IndexOf(edge[0]) == 0 && f2.IndexOf(edge[1]) == 1 && f1.IndexOf(edge[1]) == f1.Count - 2 ||
-                   f2.IndexOf(edge[1]) == 0 && f2.IndexOf(edge[0]) == 1 && f1.IndexOf(edge[0]) == f1.Count - 2;
+            for (int i = 0; i < f1.Count - 1; i++)
+            {
+                for (int j = 0; j < f2.Count - 1; j++)
+                {
+                    if (f1[i] == f2[j + 1] && f1[i + 1] == f2[j]) return true;
+                }
+            }
+            return false;
+            //List<int> edge = new List<int>(f1.Intersect(f2).Distinct());
+
+            //if (edge.Count != 2)
+            //    return false;
+
+            //return f1.IndexOf(edge[0]) - f1.IndexOf(edge[1]) == f2.IndexOf(edge[1]) - f2.IndexOf(edge[0]) ||
+            //       f1.IndexOf(edge[0]) == 0 && f1.IndexOf(edge[1]) == 1 && f2.IndexOf(edge[1]) == f2.Count - 2 ||
+            //       f1.IndexOf(edge[1]) == 0 && f1.IndexOf(edge[0]) == 1 && f2.IndexOf(edge[0]) == f2.Count - 2 ||
+            //       f2.IndexOf(edge[0]) == 0 && f2.IndexOf(edge[1]) == 1 && f1.IndexOf(edge[1]) == f1.Count - 2 ||
+            //       f2.IndexOf(edge[1]) == 0 && f2.IndexOf(edge[0]) == 1 && f1.IndexOf(edge[0]) == f1.Count - 2;
         }
-
         
-
         private static string CycleToString(this List<int> list)
         {
             string r = list[0].ToString();

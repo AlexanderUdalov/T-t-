@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace FourDimensionalSpace
@@ -15,15 +17,22 @@ namespace FourDimensionalSpace
         {
             Vertices = new Vertex[numberOfVertices];
             AdjacencyList = new List<Tuple<int, int>>(numberOfEdges);
-            Faces = new List<List<int>>(numberOfFaces);
+            //Граней в 2 раза больше, т.к. грань только с одной нормалью 
+            //Соответственно для двухсторонней грани необъодимо две односторонних
+            Faces = new List<List<int>>(numberOfFaces * 2);
+            Cells = new List<List<int>>(numberOfCells);
         }
         
         public void Rotate(float angle, Planes plane)
         {
-            for (int i = 0; i < Vertices.Length; i++)
-            {
-                Vertex.Rotate(ref Vertices[i],  CreateRotationMatrix(plane, angle));
-            }
+            Vertices.AsParallel()
+                .ForAll(vertex => Vertex.Rotate(ref vertex, CreateRotationMatrix(plane, angle)));
+        }
+
+        public async void RotateAsync(float angle, Planes plane)
+        {
+            await Task.Run(() => Vertices.AsParallel()
+                .ForAll(vertex => Vertex.Rotate(ref vertex, CreateRotationMatrix(plane, angle))));
         }
 
         private float [,] CreateRotationMatrix(Planes plane, float angle)
