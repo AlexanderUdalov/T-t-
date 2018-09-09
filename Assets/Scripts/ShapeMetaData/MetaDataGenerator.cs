@@ -300,96 +300,137 @@ namespace ShapeMetaData
                 throw new MetaDataGenerationException(
                     $"Expected number of cells = {expectedNumberOfCells}, created = {shape.Cells.Count}");
         }*/
-        
+
+            
         private static void CalculateCells(Shape shape, int facesOnCellCount, int expectedNumberOfCells)
         {
+            HashSet<int> avaliableIndexes = new HashSet<int>();
+            for (int i = 0; i < shape.Faces.Count; i++)
+                avaliableIndexes.Add(i);
+
             //List<int>[] facesAdjacency = new List<int>[shape.Faces.Count];
             //for (int i = 0; i < facesAdjacency.Length; i++)
             //    facesAdjacency[i] = new List<int>();
 
             //for (int i = 0; i < shape.Faces.Count - 1; i++)
             //    for (int j = i + 1; j < shape.Faces.Count; j++)
-            //    {
             //        if (FacesConnected(shape.Faces[j], shape.Faces[i]))
             //        {
             //            facesAdjacency[i].Add(j);
             //            facesAdjacency[j].Add(i);
-            //            var toDebug = "";
-            //            foreach (var item in shape.Faces[j])
-            //                toDebug += item + ", ";
-
-            //            toDebug += " -- ";
-            //            foreach (var item in shape.Faces[i])
-            //                toDebug += item + ", ";
-
-            //            Debug.Log(toDebug);
             //        }
+            //foreach (var face in shape.Faces)
+            //{
+            //    string toDebug = "";
+            //    foreach (var i in face)
+            //    {
+            //        toDebug += i + ", ";
             //    }
-            bool deadlock = true;
-            int cycleCount = 0;
-            while (deadlock)
+            //    Debug.Log("Face: " + toDebug);
+            //}
+            //return;
+            int preLastIndex = 0, lastIndex = 0;
+            int lastFaceIndex = -1, preLastFaceIndex = avaliableIndexes.ElementAt(preLastIndex);
+            List<int> invertedFaces = new List<int>();
+            HashSet<int> avaliableForFirstIndexes;
+            while (avaliableIndexes.Count > 0)
             {
-                HashSet<int> avaliableIndexes = new HashSet<int>();
-                for (int i = 0; i < shape.Faces.Count; i++)
-                    avaliableIndexes.Add(i);
+                var newCell = new List<int>();
+                avaliableForFirstIndexes = new HashSet<int>(avaliableIndexes.Except(invertedFaces));
 
-                while (avaliableIndexes.Count > 0)
+                bool findLastFace = false;
+                for (int j = lastIndex; j < avaliableForFirstIndexes.Count; j++)
                 {
-                    var newCell = new List<int>();
-                    int lastFaceIndex = -1, preLastFaceIndex = -1;
+                    var currentIndex = avaliableForFirstIndexes.ElementAt(j);
 
-                    preLastFaceIndex = avaliableIndexes.ElementAt(UnityEngine.Random.Range(0, avaliableIndexes.Count - 1));
+                    if (FacesConnected(shape.Faces[preLastFaceIndex], shape.Faces[currentIndex]))
+                    {
+                        lastFaceIndex = currentIndex;
+                        lastIndex = j + 1;
+                        findLastFace = true;
+                        break;
+                    }
+                }
+
+
+                newCell.Add(preLastFaceIndex);
+                newCell.Add(lastFaceIndex);
+
+                for (int i = 2; i < facesOnCellCount; i++)
+                {
                     for (int j = 0; j < avaliableIndexes.Count; j++)
                     {
                         var currentIndex = avaliableIndexes.ElementAt(j);
-
                         if (newCell.Contains(currentIndex)) continue;
-                        if (FacesConnected(shape.Faces[preLastFaceIndex], shape.Faces[currentIndex]))
+
+                        if (FacesConnected(shape.Faces[currentIndex], shape.Faces[preLastFaceIndex]) &&
+                            FacesConnected(shape.Faces[currentIndex], shape.Faces[lastFaceIndex]))
                         {
+                            newCell.Add(currentIndex);
+                            preLastFaceIndex = lastFaceIndex;
                             lastFaceIndex = currentIndex;
                             break;
                         }
                     }
-
-                    newCell.Add(preLastFaceIndex);
-                    newCell.Add(lastFaceIndex);
-
-                    for (int i = 2; i < facesOnCellCount; i++)
+                }
+                if (newCell.Count != facesOnCellCount)
+                {
+                    if (!findLastFace) lastIndex = avaliableIndexes.Count;
+                    if (lastIndex > avaliableIndexes.Count - 1)
                     {
-                        for (int j = 0; j < avaliableIndexes.Count; j++)
-                        {
-                            var currentIndex = avaliableIndexes.ElementAt(j);
-                            if (newCell.Contains(currentIndex)) continue;
-
-                            if (FacesConnected(shape.Faces[preLastFaceIndex], shape.Faces[currentIndex]) &&
-                                FacesConnected(shape.Faces[lastFaceIndex], shape.Faces[currentIndex]))
-                            {
-                                newCell.Add(currentIndex);
-                                preLastFaceIndex = lastFaceIndex;
-                                lastFaceIndex = currentIndex;
-                                break;
-                            }
-                        }
+                        lastIndex = 0;
+                        preLastIndex++;
+                        preLastFaceIndex = avaliableIndexes.ElementAt(preLastIndex);
                     }
-                    if (newCell.Count != facesOnCellCount)
+                    continue;
+                }
+                bool test = false;
+                foreach (var cell in shape.Cells) 
+                    if (IsSelfInverted(shape.Faces, newCell, cell))
+                        test = true;
+
+                if (test)
+                {
+                    
+                    if (!findLastFace) lastIndex = avaliableIndexes.Count;
+                    if (lastIndex > avaliableIndexes.Count)
                     {
-                        Debug.Log("Too much faces");
-                        cycleCount++;
-                        continue;
+                        lastIndex = 0;
+                        preLastIndex++;
+                        preLastFaceIndex = avaliableIndexes.ElementAt(preLastIndex);
                     }
+                    continue;
+                }
 
-                    foreach (var item in newCell)
-                        avaliableIndexes.Remove(item);
+                foreach (var item in newCell)
+                    avaliableIndexes.Remove(item);
 
-                    shape.Cells.Add(newCell);
-                    if (cycleCount > 5)
-                        break;
-
-                    if (shape.Cells.Count == expectedNumberOfCells)
-                        deadlock = false;
-                    else shape.Cells = new List<List<int>>(expectedNumberOfCells);
+                preLastIndex = 0;
+                lastIndex = 0;
+                 shape.Cells.Add(newCell);
+                if (avaliableIndexes.Count > 0)
+                {
+                    invertedFaces = GetInvertFaces(shape.Faces, avaliableIndexes, newCell);
+                    if (invertedFaces.Count > preLastIndex)
+                        preLastFaceIndex = invertedFaces[preLastIndex];
+                    else preLastFaceIndex = avaliableIndexes.First();
                 }
             }
+            #region Legacy
+
+            //List<int>[] facesAdjacency = new List<int>[shape.Faces.Count];
+            //for (int i = 0; i < facesAdjacency.Length; i++)
+            //    facesAdjacency[i] = new List<int>();
+
+            //for (int i = 0; i < shape.Faces.Count - 1; i++)
+            //    for (int j = i + 1; j < shape.Faces.Count; j++)
+            //        if (FacesConnected(shape.Faces[j], shape.Faces[i]))
+            //        {
+            //            facesAdjacency[i].Add(j);
+            //            facesAdjacency[j].Add(i);
+            //        }
+
+
 
             //byte[] used = new byte[shape.Faces.Count];
 
@@ -405,11 +446,47 @@ namespace ShapeMetaData
             //}
 
             //for (int i = 0; i < shape.Cells.Count; i++)
-            //    Debug.Log(i + ": " + shape.Cells[i].ToList().CycleToString());   
+            //    Debug.Log(i + ": " + shape.Cells[i].ToList().CycleToString());
 
             //if (shape.Cells.Count != expectedNumberOfCells)
             //    throw new MetaDataGenerationException(
             //        $"Expected number of cells = {expectedNumberOfCells}, created = {shape.Cells.Count}");
+            #endregion
+        }
+
+        public static List<int> GetInvertFaces(List<List<int>> faces, HashSet<int> avaliableIndexes, List<int> currentCell)
+        {
+            var invertFacesIndexes = new List<int>();
+            foreach (var faceIndex in currentCell)
+            {
+                invertFacesIndexes.Add(faces.IndexOf(faces.FirstOrDefault((x) => IsInverted(x, faces[faceIndex]))));
+            }
+            return invertFacesIndexes.Intersect(avaliableIndexes).ToList();
+        }
+
+        public static bool IsInverted(List<int> face1, List<int> face2)
+        {
+            bool result = true;
+            for (int i = 0; i < face1.Count; i++)
+            {
+                if (face1[i] != face2[face1.Count - 1 - i]) result = false;
+            }
+
+            return result;
+        }
+
+        public static bool IsSelfInverted(List<List<int>> faces, List<int> cell1, List<int> cell2)
+        {
+            HashSet<int> vertices1 = new HashSet<int>();
+            HashSet<int> vertices2 = new HashSet<int>();
+            for (int i = 0; i < cell1.Count; i++)
+                for (int j = 0; j < faces[0].Count; j++)
+                {
+                    vertices1.Add(faces[cell1[i]][j]);
+                    vertices2.Add(faces[cell2[i]][j]);
+                }
+
+            return vertices1.SetEquals(vertices2);
         }
 
         private static List<int> FindCell(int startIndex, List<int>[] adjacencyList, int limit, int vertexFaceCount)
