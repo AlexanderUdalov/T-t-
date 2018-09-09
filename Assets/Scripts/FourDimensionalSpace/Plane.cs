@@ -1,6 +1,6 @@
 ﻿namespace FourDimensionalSpace
 {
-    public enum Planes
+    public enum Plane
     {
         XoY,
         XoZ,

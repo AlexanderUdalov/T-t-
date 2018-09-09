@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.IO;
 using FourDimensionalSpace;
 using Newtonsoft.Json;
@@ -10,18 +11,29 @@ namespace ShapeMetaData
 	{
 		private static Shape _currentShape;
 		
-		public static IEnumerator CreateShape(TestVisualization visualization, ShapeType shapeType)
+		public static IEnumerator CreateShape(MonoBehaviour coroutineHost, ShapeType shapeType)
 		{
 			string path = Path.Combine(Application.streamingAssetsPath, "ShapeMetaData", shapeType + ".json");
 
 			// пока редактируется генератор - закомментил, чтобы каждый запуск обновлялось
-//			if (!File.Exists(path))
-			MetaDataGenerator.GenerateDataFile(shapeType);
+			if (!File.Exists(path))
+				MetaDataGenerator.GenerateDataFile(shapeType);
 			
 			string jsonData = null;
-			yield return visualization.StartCoroutine(LoadStringAsset(path, data => jsonData = data));
+			yield return coroutineHost.StartCoroutine(LoadStringAsset(path, data => jsonData = data));
 			
-			visualization.Shape = JsonConvert.DeserializeObject<Shape>(jsonData);
+			_currentShape = JsonConvert.DeserializeObject<Shape>(jsonData);
+		}
+
+		public static Shape GetCreatedShape()
+		{
+			if (_currentShape == null)
+				throw new Exception("Call CreateShape() before taking createdShape.");
+
+			var returnShape = _currentShape;
+			_currentShape = null;
+
+			return returnShape;
 		}
 
 		private static IEnumerator LoadStringAsset(string url, System.Action<string> result)

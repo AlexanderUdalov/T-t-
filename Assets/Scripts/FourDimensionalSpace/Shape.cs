@@ -23,26 +23,30 @@ namespace FourDimensionalSpace
             Cells = new List<List<int>>(numberOfCells);
         }
         
-        public void Rotate(float angle, Planes plane)
+        public void Rotate(float angle, Plane plane)
         {
+            var rotationMatrix = CreateRotationMatrix(plane, angle);
+            
             Vertices.AsParallel()
-                .ForAll(vertex => Vertex.Rotate(ref vertex, CreateRotationMatrix(plane, angle)));
+                .ForAll(vertex => Vertex.Rotate(ref vertex, rotationMatrix));
         }
 
-        public async void RotateAsync(float angle, Planes plane)
+        public async void RotateAsync(float angle, Plane plane)
         {
+            var rotationMatrix = CreateRotationMatrix(plane, angle);
+            
             await Task.Run(() => Vertices.AsParallel()
-                .ForAll(vertex => Vertex.Rotate(ref vertex, CreateRotationMatrix(plane, angle))));
+                .ForAll(vertex => Vertex.Rotate(ref vertex, rotationMatrix)));
         }
 
-        private float [,] CreateRotationMatrix(Planes plane, float angle)
+        private float[,] CreateRotationMatrix(Plane plane, float angle)
         {
             float cos = Mathf.Cos(angle);
             float sin = Mathf.Sin(angle);
 
             switch (plane)
             {
-                case Planes.XoW:
+                case Plane.XoW:
                     {
                         return new float[,]
                         {
@@ -52,7 +56,7 @@ namespace FourDimensionalSpace
                             { sin, 0, 0, cos }
                         };
                     }
-                case Planes.XoY:
+                case Plane.XoY:
                     {
                         return new float[,]
                         {
@@ -62,7 +66,7 @@ namespace FourDimensionalSpace
                             { 0, 0, 0, 1 }
                         };
                     }
-                case Planes.XoZ:
+                case Plane.XoZ:
                     {
                         return new float[,]
                          {
@@ -72,7 +76,7 @@ namespace FourDimensionalSpace
                             { 0, 0, 0, 1 }
                          };
                     }
-                case Planes.YoW:
+                case Plane.YoW:
                     {
                         return new float[,]
                         {
@@ -82,7 +86,7 @@ namespace FourDimensionalSpace
                             { 0, sin, 0, cos }
                         };
                     }
-                case Planes.YoZ:
+                case Plane.YoZ:
                     {
                         return new float[,]
                         {
@@ -92,7 +96,7 @@ namespace FourDimensionalSpace
                             { 0, 0, 0, 1 }
                         };
                     }
-                case Planes.ZoW:
+                case Plane.ZoW:
                     {
                         return new float[,]
                         {
