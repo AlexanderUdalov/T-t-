@@ -1,0 +1,13 @@
+{
+	"AvalibleShapes":
+	[
+		"Cell5.json",
+		"Cell8.json",
+		"Cell16.json",
+		"Cell24.json",
+		"Cell120.json",
+		"Cell600.json"
+	],
+
+	"VisualizationMode": "Lines"
+}
