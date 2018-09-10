@@ -17,11 +17,11 @@ namespace ShapeRendering
 
         public LinesShapeRenderer(Shape shape) : base(shape)
         {
-            _vertexPrefab = Resources.Load<GameObject>("VertexPrefab");
-            _edgePrefab = Resources.Load<GameObject>("EdgePrefab");
-            
-            _vertices = new List<GameObject>();
+            _edgePrefab = Resources.Load("EdgePrefab") as GameObject;
+            _vertexPrefab = Resources.Load("VertexPrefab") as GameObject;
+
             _edges = new List<LineRenderer>();
+            _vertices = new List<GameObject>();
         }
 
         public override void BuildShapeView()

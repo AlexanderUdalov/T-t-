@@ -20,7 +20,7 @@ namespace Teta
             yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Cell5));
             var shape = ShapeFactory.GetCreatedShape();
             _rotationController = new RotationController(shape);
-            _shapeRenderer = new LinesShapeRenderer(shape);
+            _shapeRenderer = new CellsShapeRenderer(shape);
             _shapeRenderer.BuildShapeView();
         }
 
