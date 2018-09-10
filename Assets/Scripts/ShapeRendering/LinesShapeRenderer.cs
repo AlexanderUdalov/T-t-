@@ -17,8 +17,8 @@ namespace ShapeRendering
 
         public LinesShapeRenderer(Shape shape) : base(shape)
         {
-            _vertexPrefab = Resources.Load<GameObject>("VertexPrefab");
-            _edgePrefab = Resources.Load<GameObject>("EdgePrefab");
+            _vertexPrefab = Resources.Load("VertexPrefab") as GameObject;
+            _edgePrefab = Resources.Load("EdgePrefab") as GameObject;
             
             _vertices = new List<GameObject>();
             _edges = new List<LineRenderer>();
