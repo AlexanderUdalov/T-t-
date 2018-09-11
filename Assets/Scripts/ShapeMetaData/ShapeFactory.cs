@@ -17,7 +17,7 @@ namespace ShapeMetaData
 
 			// пока редактируется генератор - закомментил, чтобы каждый запуск обновлялось
 			//if (!File.Exists(path))
-				MetaDataGenerator.GenerateDataFile(shapeType);
+				//MetaDataGenerator.GenerateDataFile(shapeType);
 			
 			string jsonData = null;
 			yield return coroutineHost.StartCoroutine(LoadStringAsset(path, data => jsonData = data));

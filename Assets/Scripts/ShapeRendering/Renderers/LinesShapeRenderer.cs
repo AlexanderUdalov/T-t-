@@ -9,29 +9,20 @@ namespace ShapeRendering
 {
     public class LinesShapeRenderer : BaseShapeRenderer
     {
-        private GameObject _vertexPrefab;
         private GameObject _edgePrefab;
-
-        private List<GameObject> _vertices;
         private List<LineRenderer> _edges;
 
-        public LinesShapeRenderer(Shape shape) : base(shape)
+        public LinesShapeRenderer()
         {
             _edgePrefab = Resources.Load("EdgePrefab") as GameObject;
-            _vertexPrefab = Resources.Load("VertexPrefab") as GameObject;
-
             _edges = new List<LineRenderer>();
-            _vertices = new List<GameObject>();
         }
 
         public override void BuildShapeView()
         {
-            _vertices.Clear();
             _edges.Clear();
 
-            BuildVertices();
-            BuildEdges();
-            
+            BuildEdges();            
             ModifyShapeView();
         }
 
@@ -39,32 +30,18 @@ namespace ShapeRendering
         {
             if (Shape == null) return;
             
-            if (Shape.Vertices.Length != _vertices.Count || Shape.AdjacencyList.Count != _edges.Count)
+            if (Shape.AdjacencyList.Count != _edges.Count)
                 throw new Exception("Rendering shape doesn't match with shape parameters.");
                 
-            MoveVertices();
             MoveEdges();
         }
 
-        private void BuildVertices()
-        {
-            var vertices = Shape.Vertices.Select(vertex => Object.Instantiate(_vertexPrefab, Parent));
-            _vertices.AddRange(vertices);
-        }
 
         private void BuildEdges()
         {
             var edges = Shape.AdjacencyList.Select(pair =>
                 Object.Instantiate(_edgePrefab, Parent).GetComponent<LineRenderer>());
             _edges.AddRange(edges);
-        }
-
-        private void MoveVertices()
-        {
-            for (var i = 0; i < Shape.Vertices.Length; i++)
-            {
-                _vertices[i].transform.position = Vertex.ToThridDimensionalSpace(Shape.Vertices[i], PointOfView);
-            }
         }
 
         private void MoveEdges()

@@ -11,9 +11,8 @@ namespace ShapeRendering
         //Если поставить w = 1 все сломается =(
         protected static readonly Vector4 PointOfView = new Vector4(0, 0, 1, 10);
 
-        protected BaseShapeRenderer(Shape shape)
+        protected BaseShapeRenderer()
         {
-            Shape = shape;
             Parent = new GameObject("ShapeParent").transform;
         }
 

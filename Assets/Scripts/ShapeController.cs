@@ -11,7 +11,7 @@ namespace Teta
     public class ShapeController : MonoBehaviour
     {
         private IRotationController _rotationController;
-        private IShapeRenderer _shapeRenderer;
+        private IRenderingController _renderingController;
 
         private bool _rerenderRequired;
 
@@ -20,8 +20,13 @@ namespace Teta
             yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Cell5));
             var shape = ShapeFactory.GetCreatedShape();
             _rotationController = new RotationController(shape);
-            _shapeRenderer = new CellsShapeRenderer(shape);
-            _shapeRenderer.BuildShapeView();
+            
+            _renderingController = new RenderingController(shape)
+                .AddRenderer(new DotsShapeRenderer())
+                .AddRenderer(new LinesShapeRenderer())
+                .AddRenderer(new CellsShapeRenderer());
+            
+            _renderingController.BuildShapeView();
         }
 
         public void RotateShape(float angle, Plane plane)
@@ -38,7 +43,7 @@ namespace Teta
             GetInputFromButtons();
             
             if (_rerenderRequired)
-                _shapeRenderer.ModifyShapeView();
+                _renderingController.ModifyShapeView();
         }
         
         public void ShowShape(ShapeType shapeType) => StartCoroutine(ShowShapeCoroutine(shapeType));
@@ -50,8 +55,8 @@ namespace Teta
             var shape = ShapeFactory.GetCreatedShape();
 
             _rotationController.SetShapeData(shape);
-            _shapeRenderer.SetShapeData(shape);
-            _shapeRenderer.BuildShapeView();
+            _renderingController.SetShapeData(shape);
+            _renderingController.BuildShapeView();
         }    
         
         private void GetInputFromButtons()
