@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33068116027871304}
   - component: {fileID: 23566416393530722}
   m_Layer: 0
-  m_Name: CellPrefab
+  m_Name: FacePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -56,7 +56,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 2100000, guid: 86c570c544edd8244aa518e099b462fe, type: 2}
+  - {fileID: 2100000, guid: b1a4d5def2a2a9644b80986efeb17c0c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

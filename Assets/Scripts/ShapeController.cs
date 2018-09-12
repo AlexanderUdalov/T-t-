@@ -10,6 +10,9 @@ namespace Teta
 {
     public class ShapeController : MonoBehaviour
     {
+        public Transform Player;
+        public float Speed { get; set; }
+
         private IRotationController _rotationController;
         private IRenderingController _renderingController;
 
@@ -22,8 +25,8 @@ namespace Teta
             _rotationController = new RotationController(shape);
             
             _renderingController = new RenderingController(shape)
-                .AddRenderer(new DotsShapeRenderer())
-                .AddRenderer(new LinesShapeRenderer())
+                //.AddRenderer(new DotsShapeRenderer())
+                //.AddRenderer(new LinesShapeRenderer())
                 .AddRenderer(new CellsShapeRenderer());
             
             _renderingController.BuildShapeView();
@@ -61,12 +64,19 @@ namespace Teta
         
         private void GetInputFromButtons()
         {
-            RotateShape(Input.GetAxis("XoY"), Plane.XoY);
-            RotateShape(Input.GetAxis("XoZ"), Plane.XoZ);
-            RotateShape(Input.GetAxis("YoZ"), Plane.YoZ);
-            RotateShape(Input.GetAxis("XoW"), Plane.XoW);
-            RotateShape(Input.GetAxis("YoW"), Plane.YoW);
-            RotateShape(Input.GetAxis("ZoW"), Plane.ZoW);
+            //Manual rotating
+            //RotateShape(Input.GetAxis("XoY"), Plane.XoY);
+            //RotateShape(Input.GetAxis("XoZ"), Plane.XoZ);
+            //RotateShape(Input.GetAxis("YoZ"), Plane.YoZ);
+            //RotateShape(Input.GetAxis("XoW"), Plane.XoW);
+            //RotateShape(Input.GetAxis("YoW"), Plane.YoW);
+            //RotateShape(Input.GetAxis("ZoW"), Plane.ZoW);
+
+            //Gameplay input
+            Player.Rotate(new Vector3(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal")));
+            RotateShape(Player.forward.x * Speed, Plane.XoW);
+            RotateShape(Player.forward.y * Speed, Plane.YoW);
+            RotateShape(Player.forward.z * Speed, Plane.ZoW);
         }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using FourDimensionalSpace;
@@ -43,23 +43,26 @@ namespace ShapeRendering
 
             var color = GenerateColor();
 
+            var cellParent = new GameObject("CellParent");
+            cellParent.transform.SetParent(Parent);
+
             foreach (var faceIndex in cell)
             {
-                var instantiatedFace = Object.Instantiate(_facePrefab, Parent);
-                instantiatedFace.GetComponent<MeshRenderer>().material.color = color;
+                var instantiatedFace = Object.Instantiate(_facePrefab, cellParent.transform);
+                instantiatedFace.GetComponent < MeshRenderer>().material.color = color;
 
-                var meshFilter = instantiatedFace.GetComponent<MeshFilter>();
+                var meshFilter = instantiatedFace.GetComponent < MeshFilter>();
                 meshFilter.mesh = GenerateFaceTriangles(Shape.Faces[faceIndex].Count);
                 listOfFaces.Add(meshFilter);
             }
-            
+
             _filters.Add(listOfFaces);
         }
 
         private Color GenerateColor()
         {
             var randomColor = Random.ColorHSV();
-            randomColor.a = 0.2f;
+            randomColor.a = 0.5f;
 
             return randomColor;
         }
@@ -87,6 +90,7 @@ namespace ShapeRendering
                 
                 _filters[cellIndex][i].mesh.vertices = verices;
                 _filters[cellIndex][i].mesh.normals  = GetNormals(verices);
+                _filters[cellIndex][i].mesh.RecalculateBounds();
             }
         }
 
