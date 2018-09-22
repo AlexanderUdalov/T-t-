@@ -7,7 +7,7 @@ namespace ShapeRendering
     {
         protected Shape Shape;
         protected Transform Parent;
-        
+
         //Если поставить w = 1 все сломается =(
         protected static readonly Vector4 PointOfView = new Vector4(0, 0, 1, 10);
 

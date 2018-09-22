@@ -26,8 +26,8 @@ namespace Teta
             
             _renderingController = new RenderingController(shape)
                 //.AddRenderer(new DotsShapeRenderer())
-                //.AddRenderer(new LinesShapeRenderer())
-                .AddRenderer(new CellsShapeRenderer());
+                .AddRenderer(new LinesShapeRenderer())
+                .AddRenderer(new CellsShapeRenderer(new ShaderHelper(Player)));
             
             _renderingController.BuildShapeView();
         }

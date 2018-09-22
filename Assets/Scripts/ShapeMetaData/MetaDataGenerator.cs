@@ -265,7 +265,8 @@ namespace ShapeMetaData
 
             for (int i = 0; i < minElementIndex; i++)
                 cycle.Add(cycle[i]);
-            cycle.RemoveRange(0, minElementIndex);
+            if (minElementIndex > 0)
+                cycle.RemoveRange(0, minElementIndex);
             cycle.Add(cycle[0]);
         }
 

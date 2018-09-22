@@ -12,10 +12,14 @@ namespace ShapeRendering
     {
         private GameObject _facePrefab;
 
+        //Cell<Face<Mesh>>
         private List<List<MeshFilter>> _filters;
+        private ShaderHelper _shaderHelper;
 
-        public CellsShapeRenderer()
+
+        public CellsShapeRenderer(ShaderHelper helper = null)
         {
+            _shaderHelper = helper;
             _facePrefab = Resources.Load("FacePrefab") as GameObject;
             _filters = new List<List<MeshFilter>>();
         }
@@ -26,7 +30,6 @@ namespace ShapeRendering
             _filters.Clear();
 
             BuildCells();
-            ModifyShapeView();
         }
 
         private void BuildCells()
@@ -49,11 +52,13 @@ namespace ShapeRendering
             foreach (var faceIndex in cell)
             {
                 var instantiatedFace = Object.Instantiate(_facePrefab, cellParent.transform);
-                instantiatedFace.GetComponent < MeshRenderer>().material.color = color;
+                instantiatedFace.GetComponent<MeshRenderer>().material.color = color;
 
                 var meshFilter = instantiatedFace.GetComponent < MeshFilter>();
                 meshFilter.mesh = GenerateFaceTriangles(Shape.Faces[faceIndex].Count);
                 listOfFaces.Add(meshFilter);
+
+                CalculateVertices(meshFilter.mesh, Shape.Faces[faceIndex]);
             }
 
             _filters.Add(listOfFaces);
@@ -85,13 +90,27 @@ namespace ShapeRendering
             var cell = Shape.Cells[cellIndex];
             
             for (int i = 0; i < cell.Count; i++)
-            {
-                var verices = GetVertices(Shape.Faces[cell[i]]);
-                
-                _filters[cellIndex][i].mesh.vertices = verices;
-                _filters[cellIndex][i].mesh.normals  = GetNormals(verices);
-                _filters[cellIndex][i].mesh.RecalculateBounds();
-            }
+                RecalculateVertices(_filters[cellIndex][i].mesh, Shape.Faces[cell[i]]);
+        }
+
+        private void RecalculateVertices(Mesh mesh, List<int> face)
+        {
+            var vertices = GetVertices(face);
+
+            _shaderHelper?.WriteAlpha(mesh, mesh.vertices, vertices);
+            ModifyMesh(mesh, vertices);
+        }
+
+        private void CalculateVertices(Mesh mesh, List<int> face)
+        {
+            ModifyMesh(mesh, GetVertices(face));
+        }
+
+        private void ModifyMesh(Mesh mesh, Vector3[] vertices)
+        {
+            mesh.vertices = vertices;
+            mesh.normals = GetNormals(vertices);
+            mesh.RecalculateBounds();
         }
 
         private Vector3[] GetVertices(List<int> face)
