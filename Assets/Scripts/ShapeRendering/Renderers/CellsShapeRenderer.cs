@@ -55,7 +55,7 @@ namespace ShapeRendering
                 instantiatedFace.GetComponent<MeshRenderer>().material.color = color;
 
                 var meshFilter = instantiatedFace.GetComponent < MeshFilter>();
-                meshFilter.mesh = GenerateFaceTriangles(Shape.Faces[faceIndex].Count);
+                meshFilter.mesh = GenerateFaceMesh(Shape.Faces[faceIndex].Count);
                 listOfFaces.Add(meshFilter);
 
                 CalculateVertices(meshFilter.mesh, Shape.Faces[faceIndex]);
@@ -113,6 +113,21 @@ namespace ShapeRendering
             mesh.RecalculateBounds();
         }
 
+        private Mesh GenerateFaceMesh(int verticesCount)
+        {
+            var triangles = GetTriangles(verticesCount);
+            
+            var faceMesh = new Mesh
+            {
+                vertices = new Vector3[triangles.Length],
+                normals = new Vector3[triangles.Length],
+                triangles = triangles
+            };
+            faceMesh.MarkDynamic();
+
+            return faceMesh;
+        }
+
         private Vector3[] GetVertices(List<int> face)
         {
             return face.Select(index => Vertex.ToThridDimensionalSpace(Shape.Vertices[index], PointOfView)).ToArray();
@@ -129,7 +144,7 @@ namespace ShapeRendering
             return normals;
         }
 
-        private static Mesh GenerateFaceTriangles(int verticesCount)
+        private int[] GetTriangles(int verticesCount)
         {
             if (verticesCount < 3)
                 throw new Exception(
@@ -143,14 +158,7 @@ namespace ShapeRendering
                 triangles[i * 3 + 2] = i + 2;
             }
 
-            var faceMesh = new Mesh
-            {
-                vertices = new Vector3[triangles.Length],
-                normals = new Vector3[triangles.Length],
-                triangles = triangles
-            };
-
-            return faceMesh;
+            return triangles;
         }
     }
 }
