@@ -15,6 +15,20 @@ public class InputHelper : MonoBehaviour
     }
     
     public ShapeController ShapeController;
+    public Camera Camera;
+
+    private float _Fov;
+    public float FOV {
+        get
+        {
+            return FOV;
+        }
+        set
+        {
+            Camera.fieldOfView = value;
+            _Fov = value;
+        }
+    }
 
     public Slider XoY;
     public Slider XoZ;

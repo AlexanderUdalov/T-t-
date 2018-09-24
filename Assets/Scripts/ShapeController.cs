@@ -12,6 +12,7 @@ namespace Teta
     {
         public Transform Player;
         public float Speed { get; set; }
+        public float Speed2Rotation;
 
         private IRotationController _rotationController;
         private IRenderingController _renderingController;
@@ -23,11 +24,12 @@ namespace Teta
             yield return StartCoroutine(ShapeFactory.CreateShape(this, ShapeType.Cell5));
             var shape = ShapeFactory.GetCreatedShape();
             _rotationController = new RotationController(shape);
-            
+
+            var shaderHelper = new ShaderHelper(Player);
             _renderingController = new RenderingController(shape)
                 //.AddRenderer(new DotsShapeRenderer())
-                .AddRenderer(new LinesShapeRenderer())
-                .AddRenderer(new CellsShapeRenderer(new ShaderHelper(Player)));
+                .AddRenderer(new LinesShapeRenderer(shaderHelper))
+                .AddRenderer(new CellsShapeRenderer(shaderHelper));
             
             _renderingController.BuildShapeView();
         }
@@ -40,15 +42,49 @@ namespace Teta
             _rerenderRequired = true;
             _rotationController.Rotate(angle * Time.deltaTime, plane);
         }
-        
+
+
+        private Vector2 _touchStart;
+
         private void Update()
         {
             GetInputFromButtons();
-            
+            GetMobileInput();
+
+            MoveForward();
+
             if (_rerenderRequired)
                 _renderingController.ModifyShapeView();
         }
-        
+
+        private void GetMobileInput()
+        {
+            if (Input.touchCount > 0)
+            {
+                float x = 0, y = 0;
+                Touch currentTouch = Input.touches[0];
+                if (currentTouch.phase == TouchPhase.Began)
+                {
+                    _touchStart = currentTouch.position;
+                }
+                else
+                {
+                    Vector2 touchEnd = currentTouch.position;
+                    x = touchEnd.x - _touchStart.x;
+                    y = touchEnd.y - _touchStart.y;
+                }
+
+                Player.Rotate(new Vector3(-y, x) * Speed * Speed2Rotation / 100);
+            }
+        }
+
+        private void MoveForward()
+        {
+            RotateShape(Player.forward.x * Speed, Plane.XoW);
+            RotateShape(Player.forward.y * Speed, Plane.YoW);
+            RotateShape(Player.forward.z * Speed, Plane.ZoW);
+        }
+
         public void ShowShape(ShapeType shapeType) => StartCoroutine(ShowShapeCoroutine(shapeType));
         public void ShowShape(int shapeType) => StartCoroutine(ShowShapeCoroutine((ShapeType) shapeType));
 
@@ -73,7 +109,7 @@ namespace Teta
             //RotateShape(Input.GetAxis("ZoW"), Plane.ZoW);
 
             //Gameplay input
-            Player.Rotate(new Vector3(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal")));
+            Player.Rotate(new Vector3(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal")) * Speed * Speed2Rotation);
             RotateShape(Player.forward.x * Speed, Plane.XoW);
             RotateShape(Player.forward.y * Speed, Plane.YoW);
             RotateShape(Player.forward.z * Speed, Plane.ZoW);

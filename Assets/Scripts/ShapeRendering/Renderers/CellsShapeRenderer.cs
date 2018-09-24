@@ -14,7 +14,15 @@ namespace ShapeRendering
 
         //Cell<Face<Mesh>>
         private List<List<MeshFilter>> _filters;
+
         private ShaderHelper _shaderHelper;
+
+        private List<Color> _avaliableColors = new List<Color>()
+        {
+             Color.red
+            ,Color.green
+            ,Color.blue
+        };
 
 
         public CellsShapeRenderer(ShaderHelper helper = null)
@@ -42,34 +50,29 @@ namespace ShapeRendering
 
         private void BuildCell(List<int> cell)
         {
-            var listOfFaces = new List<MeshFilter>();
-
-            var color = GenerateColor();
+            var listOfFaceMeshes = new List<MeshFilter>();
 
             var cellParent = new GameObject("CellParent");
             cellParent.transform.SetParent(Parent);
 
             foreach (var faceIndex in cell)
             {
+                Shape.Faces[faceIndex].Reverse();
                 var instantiatedFace = Object.Instantiate(_facePrefab, cellParent.transform);
-                instantiatedFace.GetComponent<MeshRenderer>().material.color = color;
 
                 var meshFilter = instantiatedFace.GetComponent < MeshFilter>();
                 meshFilter.mesh = GenerateFaceMesh(Shape.Faces[faceIndex].Count);
-                listOfFaces.Add(meshFilter);
+                listOfFaceMeshes.Add(meshFilter);
 
-                CalculateVertices(meshFilter.mesh, Shape.Faces[faceIndex]);
+                CalculateVertices(meshFilter.mesh, Shape.Faces[faceIndex], GenerateColor());
             }
 
-            _filters.Add(listOfFaces);
+            _filters.Add(listOfFaceMeshes);
         }
 
         private Color GenerateColor()
         {
-            var randomColor = Random.ColorHSV();
-            randomColor.a = 0.5f;
-
-            return randomColor;
+            return _avaliableColors[Random.Range(0, _avaliableColors.Count())];
         }
 
         public override void ModifyShapeView()
@@ -101,15 +104,25 @@ namespace ShapeRendering
             ModifyMesh(mesh, vertices);
         }
 
-        private void CalculateVertices(Mesh mesh, List<int> face)
+        private void CalculateVertices(Mesh mesh, List<int> face, Color faceColor)
         {
-            ModifyMesh(mesh, GetVertices(face));
+            var vertices = GetVertices(face);
+
+            ModifyMesh(mesh, vertices);
+
+            Color[] colors = new Color[vertices.Length];
+            for (int i = 0; i < colors.Length; i++)
+                colors[i] = new Color(faceColor.r, faceColor.g, faceColor.b);
+            
+
+            mesh.colors = colors;
         }
 
         private void ModifyMesh(Mesh mesh, Vector3[] vertices)
         {
             mesh.vertices = vertices;
             mesh.normals = GetNormals(vertices);
+            mesh.RecalculateTangents();
             mesh.RecalculateBounds();
         }
 
@@ -153,9 +166,9 @@ namespace ShapeRendering
             var triangles = new int[(verticesCount - 2) * 3];
             for (int i = 0; i < verticesCount - 2; i++)
             {
-                triangles[i * 3] = 0;
+                triangles[i * 3] = i + 2;
                 triangles[i * 3 + 1] = i + 1;
-                triangles[i * 3 + 2] = i + 2;
+                triangles[i * 3 + 2] = 0;
             }
 
             return triangles;
