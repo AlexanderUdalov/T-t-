@@ -10,6 +10,10 @@ namespace ShapeRendering
 {
     public class CellsShapeRenderer : BaseShapeRenderer
     {
+        protected override string GameObjectName => "CellsShapeRenderer";
+
+        private const float DefaultAlphaValue = 0.5f;
+        
         private GameObject _facePrefab;
 
         //Cell<Face<Mesh>>
@@ -23,7 +27,6 @@ namespace ShapeRendering
             ,Color.green
             ,Color.blue
         };
-
 
         public CellsShapeRenderer(ShaderHelper helper = null)
         {
@@ -48,23 +51,25 @@ namespace ShapeRendering
             }
         }
 
-        private void BuildCell(List<int> cell)
+        private void BuildCell(Cell cell)
         {
             var listOfFaceMeshes = new List<MeshFilter>();
 
             var cellParent = new GameObject("CellParent");
             cellParent.transform.SetParent(Parent);
 
-            foreach (var faceIndex in cell)
+            var color = GenerateColor();
+
+            foreach (var faceIndex in cell.ToList())
             {
-                Shape.Faces[faceIndex].Reverse();
+                Shape.Faces[faceIndex].ToList().Reverse();
                 var instantiatedFace = Object.Instantiate(_facePrefab, cellParent.transform);
 
                 var meshFilter = instantiatedFace.GetComponent < MeshFilter>();
                 meshFilter.mesh = GenerateFaceMesh(Shape.Faces[faceIndex].Count);
                 listOfFaceMeshes.Add(meshFilter);
 
-                CalculateVertices(meshFilter.mesh, Shape.Faces[faceIndex], GenerateColor());
+                CalculateVertices(meshFilter.mesh, Shape.Faces[faceIndex], color);
             }
 
             _filters.Add(listOfFaceMeshes);
@@ -72,7 +77,7 @@ namespace ShapeRendering
 
         private Color GenerateColor()
         {
-            return _avaliableColors[Random.Range(0, _avaliableColors.Count())];
+            return _avaliableColors[Random.Range(0, _avaliableColors.Count)];
         }
 
         public override void ModifyShapeView()
@@ -93,10 +98,10 @@ namespace ShapeRendering
             var cell = Shape.Cells[cellIndex];
             
             for (int i = 0; i < cell.Count; i++)
-                RecalculateVertices(_filters[cellIndex][i].mesh, Shape.Faces[cell[i]]);
+                RecalculateVertices(_filters[cellIndex][i].mesh, Shape.Faces[cell.GetByIndex(i)]);
         }
 
-        private void RecalculateVertices(Mesh mesh, List<int> face)
+        private void RecalculateVertices(Mesh mesh, Face face)
         {
             var vertices = GetVertices(face);
 
@@ -104,7 +109,7 @@ namespace ShapeRendering
             ModifyMesh(mesh, vertices);
         }
 
-        private void CalculateVertices(Mesh mesh, List<int> face, Color faceColor)
+        private void CalculateVertices(Mesh mesh, Face face, Color faceColor)
         {
             var vertices = GetVertices(face);
 
@@ -112,12 +117,12 @@ namespace ShapeRendering
 
             Color[] colors = new Color[vertices.Length];
             for (int i = 0; i < colors.Length; i++)
-                colors[i] = new Color(faceColor.r, faceColor.g, faceColor.b);
+                colors[i] = new Color(faceColor.r, faceColor.g, faceColor.b, DefaultAlphaValue);
             
 
             mesh.colors = colors;
         }
-
+        
         private void ModifyMesh(Mesh mesh, Vector3[] vertices)
         {
             mesh.vertices = vertices;
@@ -141,9 +146,9 @@ namespace ShapeRendering
             return faceMesh;
         }
 
-        private Vector3[] GetVertices(List<int> face)
+        private Vector3[] GetVertices(Face face)
         {
-            return face.Select(index => Vertex.ToThridDimensionalSpace(Shape.Vertices[index], PointOfView)).ToArray();
+            return face.ToList().Select(index => Vertex.ToThridDimensionalSpace(Shape.Vertices[index], PointOfView)).ToArray();
         }
 
         private Vector3[] GetNormals(Vector3[] vertices)

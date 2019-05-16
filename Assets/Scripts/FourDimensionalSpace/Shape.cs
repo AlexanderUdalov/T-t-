@@ -2,16 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using ShapeMetaData;
 using UnityEngine;
 
 namespace FourDimensionalSpace
 {
     public class Shape
     {
+        public ShapeType ShapeType { get; set; }
+        
         public Vertex[] Vertices { get; set; }
         public List<Tuple<int, int>> AdjacencyList { get; set; }
-        public List<List<int>> Faces { get; set; }
-        public List<List<int>> Cells { get; set; }
+        public List<Face> Faces { get; set; }
+        public List<Cell> Cells { get; set; }
+
+
+        public Shape()
+        {
+        }
 
         public Shape(int numberOfVertices, int numberOfEdges, int numberOfFaces, int numberOfCells)
         {
@@ -19,8 +28,8 @@ namespace FourDimensionalSpace
             AdjacencyList = new List<Tuple<int, int>>(numberOfEdges);
             //Граней в 2 раза больше, т.к. грань только с одной нормалью 
             //Соответственно для двухсторонней грани необъодимо две односторонних
-            Faces = new List<List<int>>(numberOfFaces * 2);
-            Cells = new List<List<int>>(numberOfCells);
+            Faces = new List<Face>(numberOfFaces * 2);
+            Cells = new List<Cell>(numberOfCells);
         }
         
         public void Rotate(float angle, Plane plane)
@@ -109,6 +118,68 @@ namespace FourDimensionalSpace
                 default:
                     throw new ArgumentException();
             }
+        }
+    }
+
+    public class Cell
+    {
+        [JsonProperty] private readonly List<int> _faceIndexes;
+        [JsonIgnore] public int Count => _faceIndexes.Count;
+
+        public Cell()
+        {
+            _faceIndexes = new List<int>();
+        }
+
+        public Cell(List<int> cycle)
+        {
+            _faceIndexes = cycle.ToList();
+        }
+        
+        public void AddFaceIndex(int index)
+        {
+            _faceIndexes.Add(index);
+        }
+
+        public int GetByIndex(int index)
+        {
+            return _faceIndexes[index];
+        }
+
+        public List<int> ToList()
+        {
+            return _faceIndexes;
+        }
+    }
+
+    public class Face
+    {
+        [JsonProperty] private readonly List<int> _vertexIndexes;
+        [JsonIgnore] public int Count => _vertexIndexes.Count;
+
+        public Face()
+        {
+            _vertexIndexes = new List<int>();
+        }
+
+        public Face(List<int> cycle)
+        {
+            _vertexIndexes = cycle.ToList();
+        }
+        
+        public void AddVertexIndex(int index)
+        {
+            _vertexIndexes.Add(index);
+        }
+        
+        public int GetByIndex(int index)
+        {
+            return _vertexIndexes[index];
+        }
+
+        public List<int> ToList()
+        {
+            return _vertexIndexes;
         }
     }
 }

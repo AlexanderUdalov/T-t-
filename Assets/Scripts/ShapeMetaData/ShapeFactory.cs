@@ -1,23 +1,35 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using FourDimensionalSpace;
 using Newtonsoft.Json;
 using UnityEngine;
 
 namespace ShapeMetaData
 {
-	public static class ShapeFactory
+	public class ShapeTMP
 	{
-		private static Shape _currentShape;
+		public ShapeType ShapeType { get; set; }
+
+		public Vertex[] Vertices { get; set; }
+		public List<Tuple<int, int>> AdjacencyList { get; set; }
+		public List<List<int>> Faces { get; set; }
+		public List<List<int>> Cells { get; set; }
+	}
+
+	public class ShapeFactory
+	{
+		private Shape _currentShape;
 		
-		public static IEnumerator CreateShape(MonoBehaviour coroutineHost, ShapeType shapeType)
+		public IEnumerator CreateShape(MonoBehaviour coroutineHost, ShapeType shapeType)
 		{
 			string path = Path.Combine(Application.streamingAssetsPath, "ShapeMetaData", shapeType + ".json");
 
 			// пока редактируется генератор - закомментил, чтобы каждый запуск обновлялось
 			//if (!File.Exists(path))
-				//MetaDataGenerator.GenerateDataFile(shapeType);
+			//new MetaDataGenerator().GenerateDataFile(shapeType);
 			
 			string jsonData = null;
 			yield return coroutineHost.StartCoroutine(LoadStringAsset(path, data => jsonData = data));
@@ -25,7 +37,7 @@ namespace ShapeMetaData
 			_currentShape = JsonConvert.DeserializeObject<Shape>(jsonData);
 		}
 
-		public static Shape GetCreatedShape()
+		public Shape GetCreatedShape()
 		{
 			if (_currentShape == null)
 				throw new Exception("Call CreateShape() before taking createdShape.");

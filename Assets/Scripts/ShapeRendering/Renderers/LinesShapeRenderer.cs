@@ -9,11 +9,13 @@ namespace ShapeRendering
 {
     public class LinesShapeRenderer : BaseShapeRenderer
     {
+        protected override string GameObjectName => "LinesShapeRenderer";
+        
         private GameObject _edgePrefab;
         private List<LineRenderer> _edges;
         private ShaderHelper _shaderHelper;
 
-        public LinesShapeRenderer(ShaderHelper helper)
+        public LinesShapeRenderer(ShaderHelper helper = null)
         {
             _shaderHelper = helper;
             _edgePrefab = Resources.Load("EdgePrefab") as GameObject;

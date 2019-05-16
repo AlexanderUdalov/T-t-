@@ -9,6 +9,8 @@ namespace ShapeRendering
 {
     public class DotsShapeRenderer : BaseShapeRenderer
     {
+        protected override string GameObjectName => "DotsShapeRenderer";
+        
         private GameObject _vertexPrefab;
 
         private List<GameObject> _vertices;
