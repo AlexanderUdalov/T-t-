@@ -8,71 +8,62 @@ using Random = UnityEngine.Random;
 
 namespace ShapeRendering
 {
-    public class CellsShapeRenderer : BaseShapeRenderer
+    public class FacesShapeRenderer : BaseShapeRenderer
     {
-        protected override string GameObjectName => "CellsShapeRenderer";
+        protected override string GameObjectName => "FacesShapeRenderer";
 
         private const float DefaultAlphaValue = 0.5f;
         
         private GameObject _facePrefab;
 
-        //Cell<Face<Mesh>>
-        private List<List<MeshFilter>> _filters;
+        private List<MeshFilter> _filters;
 
         private ShaderHelper _shaderHelper;
 
         private List<Color> _avaliableColors = new List<Color>()
         {
              Color.red
-            ,Color.green
-            ,Color.blue
+//            ,Color.green
+//            ,Color.blue
         };
 
-        public CellsShapeRenderer(ShaderHelper helper = null)
+        public FacesShapeRenderer(ShaderHelper helper = null)
         {
             _shaderHelper = helper;
             _facePrefab = Resources.Load("FacePrefab") as GameObject;
-            _filters = new List<List<MeshFilter>>();
+            _filters = new List<MeshFilter>();
         }
 
         public override void BuildShapeView()
         {
-            _filters.ForEach(list => list.Clear());
             _filters.Clear();
 
-            BuildCells();
+            BuildFaces();
         }
 
-        private void BuildCells()
+        private void BuildFaces()
         {
-            foreach (var cell in Shape.Cells)
+            for (int i = 0; i < Shape.Faces.Count; i++)
             {
-                BuildCell(cell);
+                BuildFace(Shape.Faces[i], i);
+
             }
         }
 
-        private void BuildCell(Cell cell)
+        private void BuildFace(Face face, int index)
         {
-            var listOfFaceMeshes = new List<MeshFilter>();
-
-            var cellParent = new GameObject("CellParent");
-            cellParent.transform.SetParent(Parent);
-
             var color = GenerateColor();
 
-            foreach (var faceIndex in cell.ToList())
-            {
-                Shape.Faces[faceIndex].ToList().Reverse();
-                var instantiatedFace = Object.Instantiate(_facePrefab, cellParent.transform);
+            face.ToList().Reverse();
+            var instantiatedFace = Object.Instantiate(_facePrefab, Parent);
+            instantiatedFace.name = "Face" + index;
 
-                var meshFilter = instantiatedFace.GetComponent<MeshFilter>();
-                meshFilter.mesh = GenerateFaceMesh(Shape.Faces[faceIndex].Count);
-                listOfFaceMeshes.Add(meshFilter);
+            var meshFilter = instantiatedFace.GetComponent<MeshFilter>();
+            meshFilter.mesh = GenerateFaceMesh(face.Count);
 
-                CalculateVertices(meshFilter.mesh, Shape.Faces[faceIndex], color);
-            }
+            CalculateVertices(meshFilter.mesh, face, color);
 
-            _filters.Add(listOfFaceMeshes);
+            _filters.Add(meshFilter);
         }
 
         private Color GenerateColor()
@@ -84,21 +75,19 @@ namespace ShapeRendering
         {
             if (Shape == null) return;
             
-            if (Shape.Cells.Count != _filters.Count)
+            if (Shape.Faces.Count != _filters.Count)
                 throw new Exception("Rendering shape doesn't match with shape parameters.");
             
-            for (int i = 0; i < Shape.Cells.Count; i++)
+            for (int i = 0; i < Shape.Faces.Count; i++)
             {
-                MoveCell(i);
+                MoveFace(i);
             }
         }
 
-        private void MoveCell(int cellIndex)
+        private void MoveFace(int faceIndex)
         {
-            var cell = Shape.Cells[cellIndex];
-            
-            for (int i = 0; i < cell.Count; i++)
-                RecalculateVertices(_filters[cellIndex][i].mesh, Shape.Faces[cell.GetByIndex(i)]);
+            var face = Shape.Faces[faceIndex];
+            RecalculateVertices(_filters[faceIndex].mesh, face);
         }
 
         private void RecalculateVertices(Mesh mesh, Face face)

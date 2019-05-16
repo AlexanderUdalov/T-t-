@@ -39,7 +39,7 @@ namespace Teta
         
         private IEnumerator Start() 
         {
-            yield return StartCoroutine(_shapeFactory.CreateShape(this, ShapeType.Cell600));
+            yield return StartCoroutine(_shapeFactory.CreateShape(this, ShapeType.Cell24));
             var shape = _shapeFactory.GetCreatedShape();
             
             _rotationController = new RotationController(shape);
@@ -48,7 +48,8 @@ namespace Teta
             _renderingController = new RenderingController(shape)
                 //.AddRenderer(new DotsShapeRenderer())
                 .AddRenderer(new LinesShapeRenderer())
-                .AddRenderer(new CellsShapeRenderer());
+                //.AddRenderer(new CellsShapeRenderer());
+                .AddRenderer(new FacesShapeRenderer());
             
             _renderingController.BuildShapeView();
         }
