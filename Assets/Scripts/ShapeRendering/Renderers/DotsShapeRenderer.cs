@@ -21,6 +21,12 @@ namespace ShapeRendering
             _vertices = new List<GameObject>();
         }
 
+        public DotsShapeRenderer(Transform parent) : base(parent)
+        {
+            _vertexPrefab = Resources.Load("VertexPrefab") as GameObject;
+            _vertices = new List<GameObject>();
+        }
+
         public override void BuildShapeView()
         {
             _vertices.Clear();
@@ -50,7 +56,7 @@ namespace ShapeRendering
         {
             for (var i = 0; i < Shape.Vertices.Length; i++)
             {
-                _vertices[i].transform.position = Vertex.ToThridDimensionalSpace(Shape.Vertices[i], PointOfView);
+                _vertices[i].transform.localPosition = Vertex.ToThridDimensionalSpace(Shape.Vertices[i], PointOfView);
             }
         }
     }

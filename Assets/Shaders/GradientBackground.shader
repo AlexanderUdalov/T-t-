@@ -40,7 +40,7 @@
 			float calcRadialGradientNormalizedTime(float2 uv) {
 			    uv -= _GradientOrigin;
                 float distanceSquared = uv.x * uv.x + uv.y * uv.y;
-                return min(distanceSquared * 4,1.0);
+                return min(distanceSquared * 2,1.0);
 			}
 			
 			float calcAspectCorrectFitWidthRadialGradientNormalizedTime(float2 uv) {

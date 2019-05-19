@@ -46,7 +46,7 @@ namespace Teta
             
             var shaderHelper = new ShaderHelper(Player);
             _renderingController = new RenderingController(shape)
-                //.AddRenderer(new DotsShapeRenderer())
+                .AddRenderer(new DotsShapeRenderer())
                 .AddRenderer(new LinesShapeRenderer())
                 //.AddRenderer(new CellsShapeRenderer());
                 .AddRenderer(new FacesShapeRenderer());

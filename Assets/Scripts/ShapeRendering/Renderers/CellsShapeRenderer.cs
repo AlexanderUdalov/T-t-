@@ -35,6 +35,13 @@ namespace ShapeRendering
             _filters = new List<List<MeshFilter>>();
         }
 
+        public CellsShapeRenderer(Transform parent, ShaderHelper helper = null): base(parent)
+        {
+            _shaderHelper = helper;
+            _facePrefab = Resources.Load("FacePrefab") as GameObject;
+            _filters = new List<List<MeshFilter>>();
+        }
+
         public override void BuildShapeView()
         {
             _filters.ForEach(list => list.Clear());

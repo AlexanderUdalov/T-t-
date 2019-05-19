@@ -18,10 +18,15 @@ namespace ShapeRendering
             Parent = new GameObject(GameObjectName).transform;
         }
 
+        protected BaseShapeRenderer(Transform parent)
+        {
+            Parent = parent;
+        }
+
         public void SetShapeData(Shape shape)
         {
-            Object.Destroy(Parent.gameObject);
-            Parent = new GameObject(GameObjectName).transform;
+            //Object.Destroy(Parent.gameObject);
+            //Parent = new GameObject(GameObjectName).transform;
             
             Shape = shape;
         }

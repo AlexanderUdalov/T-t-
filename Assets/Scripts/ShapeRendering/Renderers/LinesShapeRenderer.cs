@@ -22,6 +22,13 @@ namespace ShapeRendering
             _edges = new List<LineRenderer>();
         }
 
+        public LinesShapeRenderer(Transform parent, ShaderHelper helper = null) : base(parent)
+        {
+            _shaderHelper = helper;
+            _edgePrefab = Resources.Load("EdgePrefab") as GameObject;
+            _edges = new List<LineRenderer>();
+        }
+
         public override void BuildShapeView()
         {
             _edges.Clear();
@@ -60,7 +67,7 @@ namespace ShapeRendering
                 var newSecond = Vertex.ToThridDimensionalSpace(
                     Shape.Vertices[Shape.AdjacencyList[i].Item2], PointOfView);
 
-                _edges[i].SetPositions(new[] { newFirst, newSecond });
+                _edges[i].SetPositions(new[] { Parent.TransformPoint(newFirst), Parent.TransformPoint(newSecond) });
 
                 if (_shaderHelper != null) {
                     float startColorAlpha = _shaderHelper.CalculateAlpha(oldFirst, newFirst);
