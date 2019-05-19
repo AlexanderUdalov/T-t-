@@ -10,6 +10,7 @@ namespace Teta
 {
     public class ShapeController : MonoBehaviour
     {
+        public ShapeType ShapeType = ShapeType.Cell24;
         public Transform Player;
 
         public float Speed
@@ -32,24 +33,21 @@ namespace Teta
         
         private bool _rerenderRequired;
 
-        private void Awake()
-        {
-            _inputController = new InnerViewInputController(Player, Speed2Rotation);
-        }
         
         private IEnumerator Start() 
         {
-            yield return StartCoroutine(_shapeFactory.CreateShape(this, ShapeType.Cell24));
+            _inputController = new InnerViewInputController(Player, Speed2Rotation);
+            yield return StartCoroutine(_shapeFactory.CreateShape(this, ShapeType));
             var shape = _shapeFactory.GetCreatedShape();
             
             _rotationController = new RotationController(shape);
             
             var shaderHelper = new ShaderHelper(Player);
             _renderingController = new RenderingController(shape)
-                .AddRenderer(new DotsShapeRenderer())
-                .AddRenderer(new LinesShapeRenderer())
+                .AddRenderer(new DotsShapeRenderer(transform))
+                .AddRenderer(new LinesShapeRenderer(transform))
                 //.AddRenderer(new CellsShapeRenderer());
-                .AddRenderer(new FacesShapeRenderer());
+                .AddRenderer(new FacesShapeRenderer(transform));
             
             _renderingController.BuildShapeView();
         }
