@@ -34,12 +34,12 @@ namespace Teta
 
         private void Awake()
         {
-            _inputController = new InnerViewInputController(Player, Speed2Rotation);
+            _inputController = new OuterViewInputController(Speed2Rotation);
         }
         
         private IEnumerator Start() 
         {
-            yield return StartCoroutine(_shapeFactory.CreateShape(this, ShapeType.Cell24));
+            yield return StartCoroutine(_shapeFactory.CreateShape(this, ShapeType.Cell5));
             var shape = _shapeFactory.GetCreatedShape();
             
             _rotationController = new RotationController(shape);

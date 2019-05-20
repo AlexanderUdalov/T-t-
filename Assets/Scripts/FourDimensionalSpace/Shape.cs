@@ -17,11 +17,6 @@ namespace FourDimensionalSpace
         public List<Face> Faces { get; set; }
         public List<Cell> Cells { get; set; }
 
-
-        public Shape()
-        {
-        }
-
         public Shape(int numberOfVertices, int numberOfEdges, int numberOfFaces, int numberOfCells)
         {
             Vertices = new Vertex[numberOfVertices];
@@ -81,7 +76,7 @@ namespace FourDimensionalSpace
                          {
                             { cos, 0, -sin, 0 },
                             { 0, 1, 0, 0 },
-                            { sin, 0, 1, 0 },
+                            { sin, 0, cos, 0 },
                             { 0, 0, 0, 1 }
                          };
                     }
