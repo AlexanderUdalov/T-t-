@@ -9,13 +9,12 @@ class InnerViewInputController : IInputController
     private Transform _player;
 
     private Vector2 _touchStart;
-    private float _speed2Rotation;
 
 
-    public InnerViewInputController(Transform player, float speed2Rotation)
+    public InnerViewInputController(Transform player, float speed)
     {
         _player = player;
-        _speed2Rotation = speed2Rotation;
+        Speed = speed;
     }
 
     public List<ShapeRotationData> GetInput()
@@ -31,7 +30,7 @@ class InnerViewInputController : IInputController
     private void MovePlayer()
     {
         GetMobileInput();
-        _player.Rotate(new Vector3(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal")) * Speed * _speed2Rotation);
+        _player.Rotate(new Vector3(-Input.GetAxis("Vertical"), Input.GetAxis("Horizontal")) * Speed);
     }
 
     private void GetMobileInput()
@@ -51,7 +50,7 @@ class InnerViewInputController : IInputController
                 y = touchEnd.y - _touchStart.y;
             }
 
-            _player.Rotate(new Vector3(-y, x) * Speed * _speed2Rotation / 100);
+            _player.Rotate(new Vector3(-y, x) * Speed / 100);
         }
     }
     

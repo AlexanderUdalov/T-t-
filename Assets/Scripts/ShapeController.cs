@@ -23,8 +23,6 @@ namespace Teta
             }
         }
 
-        public float Speed2Rotation;
-
         private IRotationController _rotationController;
         private IRenderingController _renderingController;
         private IInputController _inputController;
@@ -35,7 +33,7 @@ namespace Teta
                 
         private IEnumerator Start() 
         {
-            _inputController = new OuterViewInputController(Speed2Rotation);
+            _inputController = new InnerViewInputController(Player, AppSettings.Instance.ShapeSpeed);
             yield return StartCoroutine(_shapeFactory.CreateShape(this, ShapeType));
             var shape = _shapeFactory.GetCreatedShape();
             
@@ -43,10 +41,10 @@ namespace Teta
             
             var shaderHelper = new ShaderHelper(Player);
             _renderingController = new RenderingController(shape)
-                .AddRenderer(new DotsShapeRenderer(transform))
-                .AddRenderer(new LinesShapeRenderer(transform))
+                //.AddRenderer(new DotsShapeRenderer(transform))
+                .AddRenderer(new LinesShapeRenderer(transform, shaderHelper))
                 //.AddRenderer(new CellsShapeRenderer());
-                .AddRenderer(new FacesShapeRenderer(transform));
+                .AddRenderer(new FacesShapeRenderer(transform, shaderHelper));
             
             _renderingController.BuildShapeView();
         }
@@ -54,7 +52,8 @@ namespace Teta
         private void Update()
         {
             var requiredRotations = _inputController.GetInput();
-            requiredRotations.ForEach(rotation => RotateShape(rotation.Angle, rotation.Plane));
+            foreach (var rotation in requiredRotations)
+                RotateShape(rotation.Angle, rotation.Plane);
 
             if (_rerenderRequired)
             {

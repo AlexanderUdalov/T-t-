@@ -7,11 +7,10 @@ class OuterViewInputController : IInputController
     public float Speed { get; set; }
 
     private Vector2 _touchStart;
-    private float _speed2Rotation;
 
-    public OuterViewInputController(float speed2Rotation)
+    public OuterViewInputController(float speed)
     {
-        _speed2Rotation = speed2Rotation;
+        Speed = speed;
     }
     
     public List<ShapeRotationData> GetInput()
@@ -32,8 +31,8 @@ class OuterViewInputController : IInputController
         
         var result = new List<ShapeRotationData>
         {
-            new ShapeRotationData {Angle = x * _speed2Rotation, Plane = Plane.YoZ},
-            new ShapeRotationData {Angle = y * _speed2Rotation, Plane = Plane.XoZ}
+            new ShapeRotationData {Angle = x * Speed, Plane = Plane.YoZ},
+            new ShapeRotationData {Angle = y * Speed, Plane = Plane.XoZ}
         };
 
         return result;
