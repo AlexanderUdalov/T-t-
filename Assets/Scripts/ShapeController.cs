@@ -32,11 +32,10 @@ namespace Teta
         private readonly ShapeFactory _shapeFactory = new ShapeFactory();
         
         private bool _rerenderRequired;
-
-        
+                
         private IEnumerator Start() 
         {
-            _inputController = new InnerViewInputController(Player, Speed2Rotation);
+            _inputController = new OuterViewInputController(Speed2Rotation);
             yield return StartCoroutine(_shapeFactory.CreateShape(this, ShapeType));
             var shape = _shapeFactory.GetCreatedShape();
             

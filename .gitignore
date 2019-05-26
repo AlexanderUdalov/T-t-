@@ -21,7 +21,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
-
+Builds/
 build/
 .vscode/
 
@@ -272,3 +272,4 @@ __pycache__/
 /Builds/StandaloneWindows64/Tεtα_0.01a2
 /Builds/Android/Tεtα_0.01a2
 build/MonoBleedingEdge/etc/mono/2.0/machine.config
+Builds/StandaloneWindows64/Tεtα_1.4.1/Tεtα_1.4.1_Data/Managed/UnityEngine.UmbraModule.dll.mdb

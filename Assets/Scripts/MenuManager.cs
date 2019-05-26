@@ -12,28 +12,50 @@ using UnityEngine.UI;
 public class MenuManager : MonoBehaviour
 {
     private const float LerpingTime = 0.4f;
+    public Animator CanvasAnimator;
+    public Gradient InitialGradient;
     public Gradient[] BackgroundGradients;
     public Transform[] Anchors;
-    public GradientBackground GradientBackground;
-    public Transform Camera;
 
     public Button IncrementButton, DecrementButton, ShapeButton;
 
+    private GradientBackground _gradientBackground;
+    private Transform _camera;
     private int _currentIndex = 0;
     private int _nextIndex = 0;
     private Coroutine _lerpingCoroutine;
     private List<IRenderingController> RenderingControllers = new List<IRenderingController>();
 
-    private void Start()
+    private void Awake()
+    {
+        _camera = Camera.main.transform;
+        _gradientBackground = _camera.GetComponent<GradientBackground>();
+        StartCoroutine(DelayCoroutine(
+            CanvasAnimator.runtimeAnimatorController.animationClips[0].length,
+            OnSplashPlayed)
+            );
+    }
+
+    public IEnumerator DelayCoroutine(float delayTime, Action callback)
+    {
+        yield return new WaitForSeconds(delayTime);
+        callback.Invoke();
+    }
+
+    public void OnSplashPlayed()
     {
         for (int i = 0; i < Anchors.Length; i++)
         {
             Transform anchor = (Transform)Anchors[i];
 
-            var shapeController =  anchor.gameObject.AddComponent<ShapeController>();
-           shapeController.Player = Camera;
-           shapeController.ShapeType = (ShapeType) i;
+            var shapeController = anchor.gameObject.AddComponent<ShapeController>();
+            shapeController.Player = _camera;
+            shapeController.ShapeType = (ShapeType)i;
         }
+        StartCoroutine(LerpFromSplashScreen(
+            (Vector3.zero, Anchors[0].localScale),
+            (InitialGradient, BackgroundGradients[0]),
+            LerpingTime));
     }
 
     public void OnIncrementClicked()
@@ -44,7 +66,10 @@ public class MenuManager : MonoBehaviour
             if (_nextIndex >= BackgroundGradients.Length)
                 _nextIndex = 0;
 
-            _lerpingCoroutine = StartCoroutine(LerpBackground());
+            _lerpingCoroutine = StartCoroutine(LerpMenu(
+                (BackgroundGradients[_currentIndex], BackgroundGradients[_nextIndex]),
+                LerpingTime
+                ));
         }
     }
 
@@ -56,7 +81,10 @@ public class MenuManager : MonoBehaviour
             if (_nextIndex < 0)
                 _nextIndex = BackgroundGradients.Length - 1;
 
-            _lerpingCoroutine = StartCoroutine(LerpBackground());
+            _lerpingCoroutine = StartCoroutine(LerpMenu(
+                (BackgroundGradients[_currentIndex], BackgroundGradients[_nextIndex]),
+                LerpingTime
+                ));
         }
     }
 
@@ -67,13 +95,18 @@ public class MenuManager : MonoBehaviour
             IncrementButton.interactable = false;
             DecrementButton.interactable = false;
             ShapeButton.interactable = false;
+
+            CanvasAnimator.SetTrigger("OnClick");
+
             _lerpingCoroutine = StartCoroutine(
                 LerpCameraParameters(
                     (AppSettings.Instance.MenuCameraFOV, AppSettings.Instance.InnerCameraFOV),
-                    (Camera.position, Anchors[_currentIndex].position),
+                    (_camera.position, Anchors[_currentIndex].position),
                      LerpingTime));
 
-            Anchors[_currentIndex].GetComponent<ShapeController>().Speed = AppSettings.Instance.ShapeSpeed;
+            var controller = Anchors[_currentIndex].GetComponent<ShapeController>();
+            controller.enabled = true;
+            controller.Speed = AppSettings.Instance.ShapeSpeed;
         }
     }
 
@@ -81,18 +114,41 @@ public class MenuManager : MonoBehaviour
     {
         if (_lerpingCoroutine == null)
         {
+            CanvasAnimator.SetTrigger("OnClick");
+
             _lerpingCoroutine = StartCoroutine(
                 LerpCameraParameters(
                     (AppSettings.Instance.InnerCameraFOV, AppSettings.Instance.MenuCameraFOV),
-                    (Camera.position, Vector3.zero),
+                    (_camera.position, Vector3.zero),
                      LerpingTime));
 
             IncrementButton.interactable = true;
             DecrementButton.interactable = true;
             ShapeButton.interactable = true;
-            
-            Anchors[_currentIndex].GetComponent<ShapeController>().Speed = 0;
+
+            var controller = Anchors[_currentIndex].GetComponent<ShapeController>();
+            controller.enabled = false;
+            controller.Speed = 0;
         }
+    }
+
+    private IEnumerator LerpFromSplashScreen(
+            (Vector3 from, Vector3 to) scale,
+            (Gradient from, Gradient to) background,
+            float duration)
+    {
+        float elapsedTime = 0;
+        while (elapsedTime < duration)
+        {
+            elapsedTime += Time.deltaTime;
+
+            LerpBackgroundGradient((background.from, background.to), duration, elapsedTime);
+            Anchors[0].transform.localScale = LerpExtensions.LerpEaseQuad(scale.from, scale.to, elapsedTime, duration);
+
+            yield return null;
+        }
+
+        _lerpingCoroutine = null;
     }
 
     private IEnumerator LerpCameraParameters(
@@ -101,55 +157,63 @@ public class MenuManager : MonoBehaviour
         float duration)
     {
         float elapsedTime = 0;
-        while (elapsedTime < LerpingTime)
+        while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
-            Camera.position = position.from.LerpEaseQuad(position.to, elapsedTime, duration);
-            Camera.GetComponent<Camera>().fieldOfView = Mathf.Lerp(FOV.from, FOV.to, elapsedTime / duration);
+            _camera.position = LerpExtensions.LerpEaseQuad(position.from, position.to, elapsedTime, duration);
+            _camera.GetComponent<Camera>().fieldOfView = LerpExtensions.LerpEaseQuad(FOV.from, FOV.to, elapsedTime, duration);
             yield return null;
         }
 
         _lerpingCoroutine = null;
     }
 
-    private IEnumerator LerpBackground()
+    private IEnumerator LerpMenu(
+        (Gradient from, Gradient to) backgrounds,
+        float duration)
     {
         float elapsedTime = 0;
-        while (elapsedTime < LerpingTime)
+        while (elapsedTime < duration)
         {
             elapsedTime += Time.deltaTime;
+            LerpBackgroundGradient(backgrounds, duration, elapsedTime);
 
-            var colorKeys = new GradientColorKey[2];
-            var alphaKeys = new GradientAlphaKey[2];
-
-            alphaKeys[0] = new GradientAlphaKey();
-            alphaKeys[1] = new GradientAlphaKey();
-
-            colorKeys[0] = new GradientColorKey(
-                Color.Lerp(
-                    BackgroundGradients[_currentIndex].colorKeys[0].color,
-                    BackgroundGradients[_nextIndex].colorKeys[0].color,
-                    elapsedTime / LerpingTime
-                ), 0);
-            colorKeys[1] = new GradientColorKey(
-                Color.Lerp(
-                    BackgroundGradients[_currentIndex].colorKeys[1].color,
-                    BackgroundGradients[_nextIndex].colorKeys[1].color,
-                    elapsedTime / LerpingTime
-                ), 1);
-
-            GradientBackground.Gradient.SetKeys(colorKeys, alphaKeys);
-            GradientBackground.SetDirty();
-
-            Camera.rotation = Quaternion.Euler(
-                Camera.rotation.x,
-                Mathf.LerpAngle(_currentIndex * 60, _nextIndex * 60, elapsedTime / LerpingTime),
-                Camera.rotation.z);
+            _camera.rotation = Quaternion.Euler(
+                _camera.rotation.x,
+                LerpExtensions.LerpAngleEaseQuad(_currentIndex * 60, _nextIndex * 60, elapsedTime, duration),
+                _camera.rotation.z);
 
             yield return null;
         }
 
         _lerpingCoroutine = null;
         _currentIndex = _nextIndex;
+    }
+
+    private void LerpBackgroundGradient((Gradient from, Gradient to) backgrounds, float duration, float elapsedTime)
+    {
+        var colorKeys = new GradientColorKey[2];
+        var alphaKeys = new GradientAlphaKey[2];
+
+        alphaKeys[0] = new GradientAlphaKey();
+        alphaKeys[1] = new GradientAlphaKey();
+
+        colorKeys[0] = new GradientColorKey(
+            LerpExtensions.LerpEaseQuad(
+                backgrounds.from.colorKeys[0].color,
+                backgrounds.to.colorKeys[0].color,
+                elapsedTime,
+                duration
+            ), 0);
+        colorKeys[1] = new GradientColorKey(
+            LerpExtensions.LerpEaseQuad(
+                backgrounds.from.colorKeys[1].color,
+                backgrounds.to.colorKeys[1].color,
+                elapsedTime,
+                duration
+            ), 1);
+
+        _gradientBackground.Gradient.SetKeys(colorKeys, alphaKeys);
+        _gradientBackground.SetDirty();
     }
 }
